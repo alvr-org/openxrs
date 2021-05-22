@@ -28,6 +28,8 @@ libloading = { version = "0.7", optional = true }
 [dev-dependencies]
 ash = "0.32"
 ctrlc = "3.1.5"
+wgpu = { path = "../../wgpu-rs" }
+wgpu-core = { path = "../../wgpu/wgpu-core" }
 gfx-hal = { path = "../../gfx/src/hal" }
 gfx-backend-vulkan = { path = "../../gfx/src/backend/vulkan" }
 gfx-auxil = "0.9.0"
