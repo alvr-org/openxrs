@@ -28,6 +28,8 @@ libloading = { version = "0.7", optional = true }
 [dev-dependencies]
 ash = { version = "0.37", default-features = false, features = ["loaded"] }
 ctrlc = "3.1.5"
+wgpu = { path = "../../wgpu/wgpu" }
+wgpu-hal = { path = "../../wgpu/wgpu-hal" }
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["profileapi"] }

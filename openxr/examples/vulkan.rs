@@ -9,10 +9,11 @@ use std::{
     io::Cursor,
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc,
+        Arc, Mutex,
     },
     time::Duration,
 };
+use wgpu_hal as hal;
 
 use ash::{
     util::read_spv,
@@ -116,12 +117,34 @@ pub fn main() {
             .engine_version(0)
             .api_version(vk_target_version);
 
+        let mut flags = hal::InstanceFlags::empty();
+        if cfg!(debug_assertions) {
+            flags |= hal::InstanceFlags::VALIDATION;
+            flags |= hal::InstanceFlags::DEBUG;
+        }
+
         let vk_instance = {
+            let extensions = <hal::api::Vulkan as hal::Api>::Instance::required_extensions(
+                std::mem::transmute(vk_entry.static_fn().get_instance_proc_addr),
+                flags,
+            )
+            .unwrap();
+            let mut extensions_ptrs = extensions.iter().map(|x| x.as_ptr()).collect::<Vec<_>>();
+            let layers = <hal::api::Vulkan as hal::Api>::Instance::required_layers(
+                std::mem::transmute(vk_entry.static_fn().get_instance_proc_addr),
+                flags,
+            )
+            .unwrap();
+            let mut layers_ptrs = layers.iter().map(|x| x.as_ptr()).collect::<Vec<_>>();
+
             let vk_instance = xr_instance
                 .create_vulkan_instance(
                     system,
                     std::mem::transmute(vk_entry.static_fn().get_instance_proc_addr),
-                    &vk::InstanceCreateInfo::builder().application_info(&vk_app_info) as *const _
+                    &vk::InstanceCreateInfo::builder()
+                        .application_info(&vk_app_info)
+                        .enabled_extension_names(&extensions_ptrs)
+                        .enabled_layer_names(&layers_ptrs) as *const _
                         as *const _,
                 )
                 .expect("XR error creating Vulkan instance")
@@ -132,12 +155,23 @@ pub fn main() {
                 vk::Instance::from_raw(vk_instance as _),
             )
         };
+        let hal_instance = <hal::api::Vulkan as hal::Api>::Instance::from_raw(
+            std::mem::transmute(vk_entry.static_fn().get_instance_proc_addr),
+            vk_instance.handle().as_raw(),
+            vk_target_version,
+            flags,
+            Some(Box::new(xr_instance.clone())),
+        )
+        .unwrap();
 
         let vk_physical_device = vk::PhysicalDevice::from_raw(
             xr_instance
                 .vulkan_graphics_device(system, vk_instance.handle().as_raw() as _)
                 .unwrap() as _,
         );
+        let hal_exposed_adapter = hal_instance
+            .expose_adapter(vk_physical_device.as_raw())
+            .unwrap();
 
         let vk_device_properties = vk_instance.get_physical_device_properties(vk_physical_device);
         if vk_device_properties.api_version < vk_target_version {
@@ -158,21 +192,32 @@ pub fn main() {
             })
             .expect("Vulkan device has no graphics queue");
 
+        let queue_index = 0;
+
+        let features = wgpu::Features::SPIRV_SHADER_PASSTHROUGH;
+        let limits = wgpu::Limits::default();
+
         let vk_device = {
+            let (extensions, mut physical_features, _) = hal_exposed_adapter
+                .adapter
+                .required_device_capabilities(features, &limits);
+            let mut extensions_ptrs = extensions.iter().map(|x| x.as_ptr()).collect::<Vec<_>>();
+
+            let mut info = vk::DeviceCreateInfo::builder()
+                .queue_create_infos(&[vk::DeviceQueueCreateInfo::builder()
+                    .queue_family_index(queue_family_index)
+                    .queue_priorities(&[1.0])
+                    .build()])
+                .enabled_extension_names(&extensions_ptrs)
+                .build();
+            physical_features.add_to_device_create_info(&mut info as *mut _ as _);
+
             let vk_device = xr_instance
                 .create_vulkan_device(
                     system,
                     std::mem::transmute(vk_entry.static_fn().get_instance_proc_addr),
                     vk_physical_device.as_raw() as _,
-                    &vk::DeviceCreateInfo::builder()
-                        .queue_create_infos(&[vk::DeviceQueueCreateInfo::builder()
-                            .queue_family_index(queue_family_index)
-                            .queue_priorities(&[1.0])
-                            .build()])
-                        .push_next(&mut vk::PhysicalDeviceMultiviewFeatures {
-                            multiview: vk::TRUE,
-                            ..Default::default()
-                        }) as *const _ as *const _,
+                    &info as *const _ as *const _,
                 )
                 .expect("XR error creating Vulkan device")
                 .map_err(vk::Result::from_raw)
@@ -180,148 +225,91 @@ pub fn main() {
 
             ash::Device::load(vk_instance.fp_v1_0(), vk::Device::from_raw(vk_device as _))
         };
+        let hal_device = hal_exposed_adapter
+            .adapter
+            .device_from_raw(
+                vk_device.handle().as_raw(),
+                true,
+                features,
+                &limits,
+                queue_family_index,
+                queue_index,
+            )
+            .unwrap();
 
-        let queue = vk_device.get_device_queue(queue_family_index, 0);
-
-        let view_mask = !(!0 << VIEW_COUNT);
-        let render_pass = vk_device
-            .create_render_pass(
-                &vk::RenderPassCreateInfo::builder()
-                    .attachments(&[vk::AttachmentDescription {
-                        format: COLOR_FORMAT,
-                        samples: vk::SampleCountFlags::TYPE_1,
-                        load_op: vk::AttachmentLoadOp::CLEAR,
-                        store_op: vk::AttachmentStoreOp::STORE,
-                        initial_layout: vk::ImageLayout::UNDEFINED,
-                        final_layout: vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-                        ..Default::default()
-                    }])
-                    .subpasses(&[vk::SubpassDescription::builder()
-                        .color_attachments(&[vk::AttachmentReference {
-                            attachment: 0,
-                            layout: vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-                        }])
-                        .pipeline_bind_point(vk::PipelineBindPoint::GRAPHICS)
-                        .build()])
-                    .dependencies(&[vk::SubpassDependency {
-                        src_subpass: vk::SUBPASS_EXTERNAL,
-                        dst_subpass: 0,
-                        src_stage_mask: vk::PipelineStageFlags::COLOR_ATTACHMENT_OUTPUT,
-                        dst_stage_mask: vk::PipelineStageFlags::COLOR_ATTACHMENT_OUTPUT,
-                        dst_access_mask: vk::AccessFlags::COLOR_ATTACHMENT_WRITE,
-                        ..Default::default()
-                    }])
-                    .push_next(
-                        &mut vk::RenderPassMultiviewCreateInfo::builder()
-                            .view_masks(&[view_mask])
-                            .correlation_masks(&[view_mask]),
-                    ),
+        let wgpu_instance = wgpu::Instance::from_hal::<hal::api::Vulkan>(hal_instance);
+        let wgpu_adapter = wgpu_instance.create_adapter_from_hal(hal_exposed_adapter);
+        let (wgpu_device, wgpu_queue) = wgpu_adapter
+            .create_device_from_hal(
+                hal_device,
+                &wgpu::DeviceDescriptor {
+                    label: None,
+                    features,
+                    limits,
+                },
                 None,
             )
             .unwrap();
 
-        let vert = read_spv(&mut Cursor::new(&include_bytes!("fullscreen.vert.spv")[..])).unwrap();
-        let frag = read_spv(&mut Cursor::new(
-            &include_bytes!("debug_pattern.frag.spv")[..],
-        ))
-        .unwrap();
-        let vert = vk_device
-            .create_shader_module(&vk::ShaderModuleCreateInfo::builder().code(&vert), None)
-            .unwrap();
-        let frag = vk_device
-            .create_shader_module(&vk::ShaderModuleCreateInfo::builder().code(&frag), None)
-            .unwrap();
+        let vertex_shader =
+            wgpu_device.create_shader_module_spirv(&wgpu::ShaderModuleDescriptorSpirV {
+                label: None,
+                source: read_spv(&mut Cursor::new(&include_bytes!("fullscreen.vert.spv")[..]))
+                    .unwrap()
+                    .into(),
+            });
+        let fragment_shader =
+            wgpu_device.create_shader_module_spirv(&wgpu::ShaderModuleDescriptorSpirV {
+                label: None,
+                source: read_spv(&mut Cursor::new(
+                    &include_bytes!("debug_pattern.frag.spv")[..],
+                ))
+                .unwrap()
+                .into(),
+            });
 
-        let pipeline_layout = vk_device
-            .create_pipeline_layout(
-                &vk::PipelineLayoutCreateInfo::builder().set_layouts(&[]),
-                None,
-            )
-            .unwrap();
-        let noop_stencil_state = vk::StencilOpState {
-            fail_op: vk::StencilOp::KEEP,
-            pass_op: vk::StencilOp::KEEP,
-            depth_fail_op: vk::StencilOp::KEEP,
-            compare_op: vk::CompareOp::ALWAYS,
-            compare_mask: 0,
-            write_mask: 0,
-            reference: 0,
-        };
-        let pipeline = vk_device
-            .create_graphics_pipelines(
-                vk::PipelineCache::null(),
-                &[vk::GraphicsPipelineCreateInfo::builder()
-                    .stages(&[
-                        vk::PipelineShaderStageCreateInfo {
-                            stage: vk::ShaderStageFlags::VERTEX,
-                            module: vert,
-                            p_name: b"main\0".as_ptr() as _,
-                            ..Default::default()
-                        },
-                        vk::PipelineShaderStageCreateInfo {
-                            stage: vk::ShaderStageFlags::FRAGMENT,
-                            module: frag,
-                            p_name: b"main\0".as_ptr() as _,
-                            ..Default::default()
-                        },
-                    ])
-                    .vertex_input_state(&vk::PipelineVertexInputStateCreateInfo::default())
-                    .input_assembly_state(
-                        &vk::PipelineInputAssemblyStateCreateInfo::builder()
-                            .topology(vk::PrimitiveTopology::TRIANGLE_LIST),
-                    )
-                    .viewport_state(
-                        &vk::PipelineViewportStateCreateInfo::builder()
-                            .scissor_count(1)
-                            .viewport_count(1),
-                    )
-                    .rasterization_state(
-                        &vk::PipelineRasterizationStateCreateInfo::builder()
-                            .cull_mode(vk::CullModeFlags::NONE)
-                            .polygon_mode(vk::PolygonMode::FILL)
-                            .line_width(1.0),
-                    )
-                    .multisample_state(
-                        &vk::PipelineMultisampleStateCreateInfo::builder()
-                            .rasterization_samples(vk::SampleCountFlags::TYPE_1),
-                    )
-                    .depth_stencil_state(
-                        &vk::PipelineDepthStencilStateCreateInfo::builder()
-                            .depth_test_enable(false)
-                            .depth_write_enable(false)
-                            .front(noop_stencil_state)
-                            .back(noop_stencil_state),
-                    )
-                    .color_blend_state(
-                        &vk::PipelineColorBlendStateCreateInfo::builder().attachments(&[
-                            vk::PipelineColorBlendAttachmentState {
-                                blend_enable: vk::TRUE,
-                                src_color_blend_factor: vk::BlendFactor::ONE,
-                                dst_color_blend_factor: vk::BlendFactor::ZERO,
-                                color_blend_op: vk::BlendOp::ADD,
-                                color_write_mask: vk::ColorComponentFlags::R
-                                    | vk::ColorComponentFlags::G
-                                    | vk::ColorComponentFlags::B,
-                                ..Default::default()
-                            },
-                        ]),
-                    )
-                    .dynamic_state(
-                        &vk::PipelineDynamicStateCreateInfo::builder().dynamic_states(&[
-                            vk::DynamicState::VIEWPORT,
-                            vk::DynamicState::SCISSOR,
-                        ]),
-                    )
-                    .layout(pipeline_layout)
-                    .render_pass(render_pass)
-                    .subpass(0)
-                    .build()],
-                None,
-            )
-            .unwrap()[0];
+        let pipeline_layout = wgpu_device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: None,
+            bind_group_layouts: &[],
+            push_constant_ranges: &[],
+        });
 
-        vk_device.destroy_shader_module(vert, None);
-        vk_device.destroy_shader_module(frag, None);
+        let render_pipeline = wgpu_device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: None,
+            layout: Some(&pipeline_layout),
+            vertex: wgpu::VertexState {
+                module: &vertex_shader,
+                entry_point: "main",
+                buffers: &[],
+            },
+            primitive: wgpu::PrimitiveState {
+                topology: wgpu::PrimitiveTopology::TriangleList,
+                strip_index_format: None,
+                front_face: wgpu::FrontFace::Ccw,
+                cull_mode: None,
+                unclipped_depth: false,
+                polygon_mode: wgpu::PolygonMode::Fill,
+                conservative: false,
+            },
+            depth_stencil: None,
+            multisample: wgpu::MultisampleState {
+                count: 1,
+                mask: !0x0,
+                alpha_to_coverage_enabled: false,
+            },
+            fragment: Some(wgpu::FragmentState {
+                module: &fragment_shader,
+                entry_point: "main",
+                targets: &[wgpu::ColorTargetState {
+                    format: wgpu::TextureFormat::Rgba8UnormSrgb,
+                    blend: None,
+                    write_mask: wgpu::ColorWrites::RED
+                        | wgpu::ColorWrites::GREEN
+                        | wgpu::ColorWrites::BLUE,
+                }],
+            }),
+            multiview: None,
+        });
 
         // A session represents this application's desire to display things! This is where we hook
         // up our graphics API. This does not start the session; for that, you'll need a call to
@@ -394,42 +382,12 @@ pub fn main() {
             .create_reference_space(xr::ReferenceSpaceType::STAGE, xr::Posef::IDENTITY)
             .unwrap();
 
-        let cmd_pool = vk_device
-            .create_command_pool(
-                &vk::CommandPoolCreateInfo::builder()
-                    .queue_family_index(queue_family_index)
-                    .flags(
-                        vk::CommandPoolCreateFlags::RESET_COMMAND_BUFFER
-                            | vk::CommandPoolCreateFlags::TRANSIENT,
-                    ),
-                None,
-            )
-            .unwrap();
-        let cmds = vk_device
-            .allocate_command_buffers(
-                &vk::CommandBufferAllocateInfo::builder()
-                    .command_pool(cmd_pool)
-                    .command_buffer_count(PIPELINE_DEPTH),
-            )
-            .unwrap();
-        let fences = (0..PIPELINE_DEPTH)
-            .map(|_| {
-                vk_device
-                    .create_fence(
-                        &vk::FenceCreateInfo::builder().flags(vk::FenceCreateFlags::SIGNALED),
-                        None,
-                    )
-                    .unwrap()
-            })
-            .collect::<Vec<_>>();
-
         // Main loop
         let mut swapchain = None;
         let mut event_storage = xr::EventDataBuffer::new();
         let mut session_running = false;
         // Index of the current frame, wrapped by PIPELINE_DEPTH. Not to be confused with the
         // swapchain image index.
-        let mut frame = 0;
         'main_loop: loop {
             if !running.load(Ordering::Relaxed) {
                 println!("requesting exit");
@@ -532,49 +490,80 @@ pub fn main() {
                         width: resolution.width,
                         height: resolution.height,
                         face_count: 1,
-                        array_size: VIEW_COUNT,
+                        array_size: 1,
                         mip_count: 1,
                     })
                     .unwrap();
+                let swapchain = Arc::new(Mutex::new(handle));
+
+                let hal_texture_desc = hal::TextureDescriptor {
+                    label: None,
+                    size: wgpu::Extent3d {
+                        width: resolution.width,
+                        height: resolution.height,
+                        depth_or_array_layers: 1,
+                    },
+                    mip_level_count: 1,
+                    sample_count: 1,
+                    dimension: wgpu::TextureDimension::D2,
+                    format: wgpu::TextureFormat::Rgba8UnormSrgb,
+                    usage: hal::TextureUses::COLOR_TARGET | hal::TextureUses::RESOURCE,
+                    memory_flags: hal::MemoryFlags::empty(),
+                };
+
+                let texture_desc = wgpu::TextureDescriptor {
+                    label: None,
+                    size: wgpu::Extent3d {
+                        width: resolution.width,
+                        height: resolution.height,
+                        depth_or_array_layers: 1,
+                    },
+                    mip_level_count: 1,
+                    sample_count: 1,
+                    dimension: wgpu::TextureDimension::D2,
+                    format: wgpu::TextureFormat::Rgba8UnormSrgb,
+                    usage: wgpu::TextureUsages::RENDER_ATTACHMENT
+                        | wgpu::TextureUsages::TEXTURE_BINDING,
+                };
 
                 // We'll want to track our own information about the swapchain, so we can draw stuff
                 // onto it! We'll also create a buffer for each generated texture here as well.
-                let images = handle.enumerate_images().unwrap();
+                let images = swapchain.lock().unwrap().enumerate_images().unwrap();
                 Swapchain {
-                    handle,
+                    handle: swapchain.clone(),
                     resolution,
                     buffers: images
                         .into_iter()
                         .map(|color_image| {
                             let color_image = vk::Image::from_raw(color_image);
-                            let color = vk_device
-                                .create_image_view(
-                                    &vk::ImageViewCreateInfo::builder()
-                                        .image(color_image)
-                                        .view_type(vk::ImageViewType::TYPE_2D_ARRAY)
-                                        .format(COLOR_FORMAT)
-                                        .subresource_range(vk::ImageSubresourceRange {
-                                            aspect_mask: vk::ImageAspectFlags::COLOR,
-                                            base_mip_level: 0,
-                                            level_count: 1,
-                                            base_array_layer: 0,
-                                            layer_count: VIEW_COUNT,
-                                        }),
-                                    None,
+
+                            let hal_texture = unsafe {
+                                <hal::api::Vulkan as hal::Api>::Device::texture_from_raw(
+                                    color_image.as_raw(),
+                                    &hal_texture_desc,
+                                    Some(Box::new(swapchain.clone())),
                                 )
-                                .unwrap();
-                            let framebuffer = vk_device
-                                .create_framebuffer(
-                                    &vk::FramebufferCreateInfo::builder()
-                                        .render_pass(render_pass)
-                                        .width(resolution.width)
-                                        .height(resolution.height)
-                                        .attachments(&[color])
-                                        .layers(1), // Multiview handles addressing multiple layers
-                                    None,
+                            };
+
+                            let wgpu_texture = unsafe {
+                                wgpu_device.create_texture_from_hal::<hal::api::Vulkan>(
+                                    hal_texture,
+                                    &texture_desc,
                                 )
-                                .unwrap();
-                            Framebuffer { framebuffer, color }
+                            };
+
+                            let color = wgpu_texture.create_view(&wgpu::TextureViewDescriptor {
+                                label: None,
+                                format: None,
+                                dimension: None,
+                                aspect: wgpu::TextureAspect::All,
+                                base_mip_level: 0,
+                                mip_level_count: None,
+                                base_array_layer: 0,
+                                array_layer_count: None,
+                            });
+
+                            Framebuffer { color }
                         })
                         .collect(),
                 }
@@ -582,66 +571,57 @@ pub fn main() {
 
             // We need to ask which swapchain image to use for rendering! Which one will we get?
             // Who knows! It's up to the runtime to decide.
-            let image_index = swapchain.handle.acquire_image().unwrap();
+            let image_index = swapchain.handle.lock().unwrap().acquire_image().unwrap();
 
             // Wait until the image is available to render to. The compositor could still be
             // reading from it.
-            swapchain.handle.wait_image(xr::Duration::INFINITE).unwrap();
-
-            // Ensure the last use of this frame's resources is 100% done
-            vk_device
-                .wait_for_fences(&[fences[frame]], true, u64::MAX)
+            swapchain
+                .handle
+                .lock()
+                .unwrap()
+                .wait_image(xr::Duration::INFINITE)
                 .unwrap();
-            vk_device.reset_fences(&[fences[frame]]).unwrap();
 
-            let cmd = cmds[frame];
-            vk_device
-                .begin_command_buffer(
-                    cmd,
-                    &vk::CommandBufferBeginInfo::builder()
-                        .flags(vk::CommandBufferUsageFlags::ONE_TIME_SUBMIT),
-                )
-                .unwrap();
-            vk_device.cmd_begin_render_pass(
-                cmd,
-                &vk::RenderPassBeginInfo::builder()
-                    .render_pass(render_pass)
-                    .framebuffer(swapchain.buffers[image_index as usize].framebuffer)
-                    .render_area(vk::Rect2D {
-                        offset: vk::Offset2D::default(),
-                        extent: swapchain.resolution,
-                    })
-                    .clear_values(&[vk::ClearValue {
-                        color: vk::ClearColorValue {
-                            float32: [0.0, 0.0, 0.0, 1.0],
-                        },
-                    }]),
-                vk::SubpassContents::INLINE,
+            let mut command_encoder = wgpu_device.create_command_encoder(&Default::default());
+
+            let mut render_pass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: None,
+                color_attachments: &[wgpu::RenderPassColorAttachment {
+                    view: &swapchain.buffers[image_index as usize].color,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color {
+                            r: 0.0,
+                            g: 0.0,
+                            b: 0.0,
+                            a: 1.0,
+                        }),
+                        store: true,
+                    },
+                }],
+                depth_stencil_attachment: None,
+            });
+
+            render_pass.set_viewport(
+                0_f32,
+                0_f32,
+                swapchain.resolution.width as _,
+                swapchain.resolution.width as _,
+                0_f32,
+                1_f32,
+            );
+            render_pass.set_scissor_rect(
+                0,
+                0,
+                swapchain.resolution.width,
+                swapchain.resolution.width,
             );
 
-            let viewports = [vk::Viewport {
-                x: 0.0,
-                y: 0.0,
-                width: swapchain.resolution.width as f32,
-                height: swapchain.resolution.height as f32,
-                min_depth: 0.0,
-                max_depth: 1.0,
-            }];
-            let scissors = [vk::Rect2D {
-                offset: vk::Offset2D { x: 0, y: 0 },
-                extent: swapchain.resolution,
-            }];
-            vk_device.cmd_set_viewport(cmd, 0, &viewports);
-            vk_device.cmd_set_scissor(cmd, 0, &scissors);
+            render_pass.set_pipeline(&render_pipeline);
+            render_pass.draw(0..3, 0..1);
+            drop(render_pass);
 
-            // Draw the scene. Multiview means we only need to do this once, and the GPU will
-            // automatically broadcast operations to all views. Shaders can use `gl_ViewIndex` to
-            // e.g. select the correct view matrix.
-            vk_device.cmd_bind_pipeline(cmd, vk::PipelineBindPoint::GRAPHICS, pipeline);
-            vk_device.cmd_draw(cmd, 3, 1, 0, 0);
-
-            vk_device.cmd_end_render_pass(cmd);
-            vk_device.end_command_buffer(cmd).unwrap();
+            let command_buffer = command_encoder.finish();
 
             session.sync_actions(&[(&action_set).into()]).unwrap();
 
@@ -687,15 +667,8 @@ pub fn main() {
                 .locate_views(VIEW_TYPE, xr_frame_state.predicted_display_time, &stage)
                 .unwrap();
 
-            // Submit commands to the GPU, then tell OpenXR we're done with our part.
-            vk_device
-                .queue_submit(
-                    queue,
-                    &[vk::SubmitInfo::builder().command_buffers(&[cmd]).build()],
-                    fences[frame],
-                )
-                .unwrap();
-            swapchain.handle.release_image().unwrap();
+            wgpu_queue.submit(Some(command_buffer));
+            swapchain.handle.lock().unwrap().release_image().unwrap();
 
             // Tell OpenXR what to present for this frame
             let rect = xr::Rect2Di {
@@ -705,6 +678,9 @@ pub fn main() {
                     height: swapchain.resolution.height as _,
                 },
             };
+
+            let swapchain = &swapchain.handle.lock().unwrap();
+
             frame_stream
                 .end(
                     xr_frame_state.predicted_display_time,
@@ -716,7 +692,7 @@ pub fn main() {
                                 .fov(views[0].fov)
                                 .sub_image(
                                     xr::SwapchainSubImage::new()
-                                        .swapchain(&swapchain.handle)
+                                        .swapchain(swapchain)
                                         .image_array_index(0)
                                         .image_rect(rect),
                                 ),
@@ -725,15 +701,14 @@ pub fn main() {
                                 .fov(views[1].fov)
                                 .sub_image(
                                     xr::SwapchainSubImage::new()
-                                        .swapchain(&swapchain.handle)
-                                        .image_array_index(1)
+                                        .swapchain(swapchain)
+                                        .image_array_index(0)
                                         .image_rect(rect),
                                 ),
                         ]),
                     ],
                 )
                 .unwrap();
-            frame = (frame + 1) % PIPELINE_DEPTH as usize;
         }
 
         // OpenXR MUST be allowed to clean up before we destroy Vulkan resources it could touch, so
@@ -746,32 +721,14 @@ pub fn main() {
             action_set,
             left_space,
             right_space,
-            left_action,
-            right_action,
+            swapchain,
         ));
-
-        // Ensure all in-flight frames are finished before destroying resources they might use
-        vk_device.wait_for_fences(&fences, true, !0).unwrap();
-        for fence in fences {
-            vk_device.destroy_fence(fence, None);
-        }
-
-        if let Some(swapchain) = swapchain {
-            for buffer in swapchain.buffers {
-                vk_device.destroy_framebuffer(buffer.framebuffer, None);
-                vk_device.destroy_image_view(buffer.color, None);
-            }
-        }
-
-        vk_device.destroy_pipeline(pipeline, None);
-        vk_device.destroy_pipeline_layout(pipeline_layout, None);
-        vk_device.destroy_command_pool(cmd_pool, None);
-        vk_device.destroy_render_pass(render_pass, None);
-        vk_device.destroy_device(None);
-        vk_instance.destroy_instance(None);
     }
 
-    println!("exiting cleanly");
+    #[cfg(target_os = "android")]
+    ndk_glue::native_activity().finish();
+
+    // graphics objects are dropped here
 }
 
 pub const COLOR_FORMAT: vk::Format = vk::Format::R8G8B8A8_SRGB;
@@ -779,15 +736,11 @@ pub const VIEW_COUNT: u32 = 2;
 const VIEW_TYPE: xr::ViewConfigurationType = xr::ViewConfigurationType::PRIMARY_STEREO;
 
 struct Swapchain {
-    handle: xr::Swapchain<xr::Vulkan>,
+    handle: Arc<Mutex<xr::Swapchain<xr::Vulkan>>>,
     buffers: Vec<Framebuffer>,
     resolution: vk::Extent2D,
 }
 
 struct Framebuffer {
-    framebuffer: vk::Framebuffer,
-    color: vk::ImageView,
+    color: wgpu::TextureView,
 }
-
-/// Maximum number of frames in flight
-const PIPELINE_DEPTH: u32 = 2;
