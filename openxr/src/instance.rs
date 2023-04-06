@@ -149,18 +149,126 @@ impl Instance {
         }
     }
 
-    #[inline]
-    pub fn supports_hand_tracking(&self, system: SystemId) -> Result<bool> {
+    fn ext_props<T>(
+        &self,
+        system: SystemId,
+        get_ext_props: fn(*mut sys::BaseOutStructure) -> MaybeUninit<T>,
+    ) -> Result<T> {
+        let mut ext_props = get_ext_props(ptr::null_mut());
+        let mut p = sys::SystemProperties::out(&mut ext_props as *mut _ as _);
         unsafe {
-            let mut hand = sys::SystemHandTrackingPropertiesEXT::out(ptr::null_mut());
-            let mut p = sys::SystemProperties::out(&mut hand as *mut _ as _);
             cvt((self.fp().get_system_properties)(
                 self.as_raw(),
                 system,
                 p.as_mut_ptr(),
             ))?;
-            Ok(hand.assume_init().supports_hand_tracking.into())
+            Ok(ext_props.assume_init())
         }
+    }
+
+    #[inline]
+    pub fn supports_hand_tracking(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemHandTrackingPropertiesEXT::out)?;
+        Ok(props.supports_hand_tracking.into())
+    }
+
+    #[inline]
+    pub fn supports_eye_gaze_interaction(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemEyeGazeInteractionPropertiesEXT::out)?;
+        Ok(props.supports_eye_gaze_interaction.into())
+    }
+
+    #[inline]
+    pub fn supports_social_eye_tracking(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemEyeTrackingPropertiesFB::out)?;
+        Ok(props.supports_eye_tracking.into())
+    }
+
+    #[inline]
+    pub fn supports_fb_face_tracking(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemFaceTrackingPropertiesFB::out)?;
+        Ok(props.supports_face_tracking.into())
+    }
+
+    #[inline]
+    pub fn supports_htc_eye_facial_tracking(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemFacialTrackingPropertiesHTC::out)?;
+        Ok(props.support_eye_facial_tracking.into())
+    }
+
+    #[inline]
+    pub fn supports_htc_lip_facial_tracking(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemFacialTrackingPropertiesHTC::out)?;
+        Ok(props.support_lip_facial_tracking.into())
+    }
+
+    #[inline]
+    pub fn supports_meta_eye_tracked_foveation(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemFoveationEyeTrackedPropertiesMETA::out)?;
+        Ok(props.supports_foveation_eye_tracked.into())
+    }
+
+    #[inline]
+    pub fn supports_varjo_eye_tracked_foveation(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemFoveatedRenderingPropertiesVARJO::out)?;
+        Ok(props.supports_foveated_rendering.into())
+    }
+
+    #[inline]
+    pub fn supports_keyboard_tracking(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemKeyboardTrackingPropertiesFB::out)?;
+        Ok(props.supports_keyboard_tracking.into())
+    }
+
+    #[inline]
+    pub fn supports_fingers_curl_force_feedback(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemForceFeedbackCurlPropertiesMNDX::out)?;
+        Ok(props.supports_force_feedback_curl.into())
+    }
+
+    #[inline]
+    pub fn native_color_space(&self, system: SystemId) -> Result<ColorSpaceFB> {
+        let props = self.ext_props(system, sys::SystemColorSpacePropertiesFB::out)?;
+        Ok(props.color_space)
+    }
+
+    #[inline]
+    pub fn space_warp_recommended_motion_vector_image_size(
+        &self,
+        system: SystemId,
+    ) -> Result<Extent2Di> {
+        let props = self.ext_props(system, sys::SystemSpaceWarpPropertiesFB::out)?;
+        Ok(Extent2Di {
+            width: props.recommended_motion_vector_image_rect_width as i32,
+            height: props.recommended_motion_vector_image_rect_height as i32,
+        })
+    }
+
+    #[inline]
+    pub fn headset_id(&self, system: SystemId) -> Result<UuidEXT> {
+        let props = self.ext_props(system, sys::SystemHeadsetIdPropertiesMETA::out)?;
+        Ok(props.id)
+    }
+
+    #[inline]
+    pub fn fb_passthrough_capabilities(
+        &self,
+        system: SystemId,
+    ) -> Result<PassthroughCapabilityFlagsFB> {
+        let mut props = sys::SystemPassthroughProperties2FB {
+            ty: sys::SystemPassthroughPropertiesFB::TYPE,
+            next: ptr::null_mut(),
+            capabilities: PassthroughCapabilityFlagsFB::EMPTY,
+        };
+        let mut p = sys::SystemProperties::out(&mut props as *mut _ as _);
+        unsafe {
+            cvt((self.fp().get_system_properties)(
+                self.as_raw(),
+                system,
+                p.as_mut_ptr(),
+            ))?;
+        }
+        Ok(props.capabilities)
     }
 
     /// Construct a `Path` from a string
