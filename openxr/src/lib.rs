@@ -38,8 +38,15 @@ pub use foveation_profile_fb::*;
 mod vive_tracker_paths;
 pub use vive_tracker_paths::*;
 mod display_refresh_rate;
+pub use display_refresh_rate::*;
 mod passthrough;
 pub use passthrough::*;
+mod eye_tracking_social;
+pub use eye_tracking_social::*;
+mod face_tracking_fb;
+pub use face_tracking_fb::*;
+mod htc_facial_tracking;
+pub use htc_facial_tracking::*;
 
 pub use builder::{
     CompositionLayerBase, CompositionLayerCubeKHR, CompositionLayerCylinderKHR,

@@ -3,7 +3,7 @@ use std::{ffi::CString, mem::MaybeUninit, ptr, sync::Arc};
 use crate::*;
 
 pub struct Space {
-    session: Arc<session::SessionInner>,
+    pub(crate) session: Arc<session::SessionInner>,
     _action_guard: Option<Action<Posef>>,
     handle: sys::Space,
 }
