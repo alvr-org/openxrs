@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{ptr, sync::Arc};
 
 use crate::*;
 
@@ -67,6 +67,65 @@ impl<G> Session<G> {
         cvt(res)?;
 
         Ok(unsafe { FoveationProfileFB::from_raw(self.instance().clone(), profile) })
+    }
+}
+
+impl<G: Graphics> Session<G> {
+    pub fn create_swapchain_with_foveation(
+        &self,
+        info: &SwapchainCreateInfo<G>,
+        flags: SwapchainCreateFoveationFlagsFB,
+    ) -> Result<Swapchain<G>> {
+        let foveation_info = sys::SwapchainCreateInfoFoveationFB {
+            ty: sys::SwapchainCreateInfoFoveationFB::TYPE,
+            next: ptr::null_mut(),
+            flags,
+        };
+
+        let mut out = sys::Swapchain::NULL;
+        let info = sys::SwapchainCreateInfo {
+            ty: sys::SwapchainCreateInfo::TYPE,
+            next: &foveation_info as *const _ as _,
+            create_flags: info.create_flags,
+            usage_flags: info.usage_flags,
+            format: G::lower_format(info.format),
+            sample_count: info.sample_count,
+            width: info.width,
+            height: info.height,
+            face_count: info.face_count,
+            array_size: info.array_size,
+            mip_count: info.mip_count,
+        };
+        unsafe {
+            cvt((self.instance().fp().create_swapchain)(
+                self.as_raw(),
+                &info,
+                &mut out,
+            ))?;
+            Ok(Swapchain::from_raw(self.clone(), out))
+        }
+    }
+}
+
+impl<G: Graphics> Swapchain<G> {
+    pub fn update_foveation(&self, profile: &FoveationProfileFB) -> Result<()> {
+        let fp = self
+            .instance()
+            .exts()
+            .fb_swapchain_update_state
+            .as_ref()
+            .ok_or(sys::Result::ERROR_EXTENSION_NOT_PRESENT)?;
+
+        let info = sys::SwapchainStateFoveationFB {
+            ty: sys::SwapchainStateFoveationFB::TYPE,
+            next: ptr::null_mut(),
+            flags: SwapchainStateFoveationFlagsFB::EMPTY,
+            profile: profile.as_raw(),
+        };
+
+        unsafe { cvt((fp.update_swapchain)(self.as_raw(), &info as *const _ as _))? };
+
+        Ok(())
     }
 }
 
