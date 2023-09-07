@@ -13,7 +13,9 @@ use libc::{timespec, wchar_t};
 use std::fmt;
 use std::mem::MaybeUninit;
 use std::os::raw::{c_char, c_void};
-pub const CURRENT_API_VERSION: Version = Version::new(1u16, 0u16, 27u32);
+pub const CURRENT_API_VERSION: Version = Version::new(1u16, 0u16, 29u32);
+pub const EXTENSION_ENUM_BASE: usize = 1000000000usize;
+pub const EXTENSION_ENUM_STRIDE: usize = 1000usize;
 pub const NULL_PATH: usize = 0usize;
 pub const NULL_SYSTEM_ID: usize = 0usize;
 pub const NO_DURATION: usize = 0usize;
@@ -51,6 +53,7 @@ pub const MAX_RENDER_MODEL_NAME_SIZE_FB: usize = 64usize;
 pub const MAX_SPATIAL_ANCHOR_NAME_SIZE_MSFT: usize = 256usize;
 pub const MAX_AUDIO_DEVICE_STR_SIZE_OCULUS: usize = 128usize;
 pub const FOVEATION_CENTER_SIZE_META: usize = 2usize;
+pub const MAX_VIRTUAL_KEYBOARD_COMMIT_TEXT_SIZE_META: usize = 3992usize;
 pub const MAX_EXTERNAL_CAMERA_NAME_SIZE_OCULUS: usize = 32usize;
 pub const UUID_SIZE_EXT: usize = 16usize;
 #[doc = "Structure type enumerant - see [XrStructureType](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType)"]
@@ -304,6 +307,7 @@ impl StructureType {
     pub const SEMANTIC_LABELS_FB: StructureType = Self(1000175000i32);
     pub const ROOM_LAYOUT_FB: StructureType = Self(1000175001i32);
     pub const BOUNDARY_2D_FB: StructureType = Self(1000175002i32);
+    pub const SEMANTIC_LABELS_SUPPORT_INFO_FB: StructureType = Self(1000175010i32);
     pub const DIGITAL_LENS_CONTROL_ALMALENCE: StructureType = Self(1000196000i32);
     pub const EVENT_DATA_SCENE_CAPTURE_COMPLETE_FB: StructureType = Self(1000198001i32);
     pub const SCENE_CAPTURE_REQUEST_INFO_FB: StructureType = Self(1000198050i32);
@@ -327,6 +331,22 @@ impl StructureType {
         Self::DEVICE_PCM_SAMPLE_RATE_STATE_FB;
     pub const COMPOSITION_LAYER_DEPTH_TEST_FB: StructureType = Self(1000212000i32);
     pub const LOCAL_DIMMING_FRAME_END_INFO_META: StructureType = Self(1000216000i32);
+    pub const PASSTHROUGH_PREFERENCES_META: StructureType = Self(1000217000i32);
+    pub const SYSTEM_VIRTUAL_KEYBOARD_PROPERTIES_META: StructureType = Self(1000219001i32);
+    pub const VIRTUAL_KEYBOARD_CREATE_INFO_META: StructureType = Self(1000219002i32);
+    pub const VIRTUAL_KEYBOARD_SPACE_CREATE_INFO_META: StructureType = Self(1000219003i32);
+    pub const VIRTUAL_KEYBOARD_LOCATION_INFO_META: StructureType = Self(1000219004i32);
+    pub const VIRTUAL_KEYBOARD_MODEL_VISIBILITY_SET_INFO_META: StructureType = Self(1000219005i32);
+    pub const VIRTUAL_KEYBOARD_ANIMATION_STATE_META: StructureType = Self(1000219006i32);
+    pub const VIRTUAL_KEYBOARD_MODEL_ANIMATION_STATES_META: StructureType = Self(1000219007i32);
+    pub const VIRTUAL_KEYBOARD_TEXTURE_DATA_META: StructureType = Self(1000219009i32);
+    pub const VIRTUAL_KEYBOARD_INPUT_INFO_META: StructureType = Self(1000219010i32);
+    pub const VIRTUAL_KEYBOARD_TEXT_CONTEXT_CHANGE_INFO_META: StructureType = Self(1000219011i32);
+    pub const EVENT_DATA_VIRTUAL_KEYBOARD_COMMIT_TEXT_META: StructureType = Self(1000219014i32);
+    pub const EVENT_DATA_VIRTUAL_KEYBOARD_BACKSPACE_META: StructureType = Self(1000219015i32);
+    pub const EVENT_DATA_VIRTUAL_KEYBOARD_ENTER_META: StructureType = Self(1000219016i32);
+    pub const EVENT_DATA_VIRTUAL_KEYBOARD_SHOWN_META: StructureType = Self(1000219017i32);
+    pub const EVENT_DATA_VIRTUAL_KEYBOARD_HIDDEN_META: StructureType = Self(1000219018i32);
     pub const EXTERNAL_CAMERA_OCULUS: StructureType = Self(1000226000i32);
     pub const VULKAN_SWAPCHAIN_CREATE_INFO_META: StructureType = Self(1000227000i32);
     pub const PERFORMANCE_METRICS_STATE_META: StructureType = Self(1000232001i32);
@@ -335,6 +355,11 @@ impl StructureType {
     pub const EVENT_DATA_SPACE_LIST_SAVE_COMPLETE_FB: StructureType = Self(1000238001i32);
     pub const SPACE_USER_CREATE_INFO_FB: StructureType = Self(1000241001i32);
     pub const SYSTEM_HEADSET_ID_PROPERTIES_META: StructureType = Self(1000245000i32);
+    pub const SYSTEM_PASSTHROUGH_COLOR_LUT_PROPERTIES_META: StructureType = Self(1000266000i32);
+    pub const PASSTHROUGH_COLOR_LUT_CREATE_INFO_META: StructureType = Self(1000266001i32);
+    pub const PASSTHROUGH_COLOR_LUT_UPDATE_INFO_META: StructureType = Self(1000266002i32);
+    pub const PASSTHROUGH_COLOR_MAP_LUT_META: StructureType = Self(1000266100i32);
+    pub const PASSTHROUGH_COLOR_MAP_INTERPOLATED_LUT_META: StructureType = Self(1000266101i32);
     pub const PASSTHROUGH_CREATE_INFO_HTC: StructureType = Self(1000317001i32);
     pub const PASSTHROUGH_COLOR_HTC: StructureType = Self(1000317002i32);
     pub const PASSTHROUGH_MESH_TRANSFORM_INFO_HTC: StructureType = Self(1000317003i32);
@@ -345,6 +370,15 @@ impl StructureType {
     pub const ACTIVE_ACTION_SET_PRIORITIES_EXT: StructureType = Self(1000373000i32);
     pub const SYSTEM_FORCE_FEEDBACK_CURL_PROPERTIES_MNDX: StructureType = Self(1000375000i32);
     pub const FORCE_FEEDBACK_CURL_APPLY_LOCATIONS_MNDX: StructureType = Self(1000375001i32);
+    pub const HAND_TRACKING_DATA_SOURCE_INFO_EXT: StructureType = Self(1000428000i32);
+    pub const HAND_TRACKING_DATA_SOURCE_STATE_EXT: StructureType = Self(1000428001i32);
+    pub const PLANE_DETECTOR_CREATE_INFO_EXT: StructureType = Self(1000429001i32);
+    pub const PLANE_DETECTOR_BEGIN_INFO_EXT: StructureType = Self(1000429002i32);
+    pub const PLANE_DETECTOR_GET_INFO_EXT: StructureType = Self(1000429003i32);
+    pub const PLANE_DETECTOR_LOCATIONS_EXT: StructureType = Self(1000429004i32);
+    pub const PLANE_DETECTOR_LOCATION_EXT: StructureType = Self(1000429005i32);
+    pub const PLANE_DETECTOR_POLYGON_BUFFER_EXT: StructureType = Self(1000429006i32);
+    pub const SYSTEM_PLANE_DETECTION_PROPERTIES_EXT: StructureType = Self(1000429007i32);
     pub fn from_raw(x: i32) -> Self {
         Self(x)
     }
@@ -725,6 +759,7 @@ impl fmt::Debug for StructureType {
             Self::SEMANTIC_LABELS_FB => Some("SEMANTIC_LABELS_FB"),
             Self::ROOM_LAYOUT_FB => Some("ROOM_LAYOUT_FB"),
             Self::BOUNDARY_2D_FB => Some("BOUNDARY_2D_FB"),
+            Self::SEMANTIC_LABELS_SUPPORT_INFO_FB => Some("SEMANTIC_LABELS_SUPPORT_INFO_FB"),
             Self::DIGITAL_LENS_CONTROL_ALMALENCE => Some("DIGITAL_LENS_CONTROL_ALMALENCE"),
             Self::EVENT_DATA_SCENE_CAPTURE_COMPLETE_FB => {
                 Some("EVENT_DATA_SCENE_CAPTURE_COMPLETE_FB")
@@ -754,6 +789,46 @@ impl fmt::Debug for StructureType {
             Self::DEVICE_PCM_SAMPLE_RATE_STATE_FB => Some("DEVICE_PCM_SAMPLE_RATE_STATE_FB"),
             Self::COMPOSITION_LAYER_DEPTH_TEST_FB => Some("COMPOSITION_LAYER_DEPTH_TEST_FB"),
             Self::LOCAL_DIMMING_FRAME_END_INFO_META => Some("LOCAL_DIMMING_FRAME_END_INFO_META"),
+            Self::PASSTHROUGH_PREFERENCES_META => Some("PASSTHROUGH_PREFERENCES_META"),
+            Self::SYSTEM_VIRTUAL_KEYBOARD_PROPERTIES_META => {
+                Some("SYSTEM_VIRTUAL_KEYBOARD_PROPERTIES_META")
+            }
+            Self::VIRTUAL_KEYBOARD_CREATE_INFO_META => Some("VIRTUAL_KEYBOARD_CREATE_INFO_META"),
+            Self::VIRTUAL_KEYBOARD_SPACE_CREATE_INFO_META => {
+                Some("VIRTUAL_KEYBOARD_SPACE_CREATE_INFO_META")
+            }
+            Self::VIRTUAL_KEYBOARD_LOCATION_INFO_META => {
+                Some("VIRTUAL_KEYBOARD_LOCATION_INFO_META")
+            }
+            Self::VIRTUAL_KEYBOARD_MODEL_VISIBILITY_SET_INFO_META => {
+                Some("VIRTUAL_KEYBOARD_MODEL_VISIBILITY_SET_INFO_META")
+            }
+            Self::VIRTUAL_KEYBOARD_ANIMATION_STATE_META => {
+                Some("VIRTUAL_KEYBOARD_ANIMATION_STATE_META")
+            }
+            Self::VIRTUAL_KEYBOARD_MODEL_ANIMATION_STATES_META => {
+                Some("VIRTUAL_KEYBOARD_MODEL_ANIMATION_STATES_META")
+            }
+            Self::VIRTUAL_KEYBOARD_TEXTURE_DATA_META => Some("VIRTUAL_KEYBOARD_TEXTURE_DATA_META"),
+            Self::VIRTUAL_KEYBOARD_INPUT_INFO_META => Some("VIRTUAL_KEYBOARD_INPUT_INFO_META"),
+            Self::VIRTUAL_KEYBOARD_TEXT_CONTEXT_CHANGE_INFO_META => {
+                Some("VIRTUAL_KEYBOARD_TEXT_CONTEXT_CHANGE_INFO_META")
+            }
+            Self::EVENT_DATA_VIRTUAL_KEYBOARD_COMMIT_TEXT_META => {
+                Some("EVENT_DATA_VIRTUAL_KEYBOARD_COMMIT_TEXT_META")
+            }
+            Self::EVENT_DATA_VIRTUAL_KEYBOARD_BACKSPACE_META => {
+                Some("EVENT_DATA_VIRTUAL_KEYBOARD_BACKSPACE_META")
+            }
+            Self::EVENT_DATA_VIRTUAL_KEYBOARD_ENTER_META => {
+                Some("EVENT_DATA_VIRTUAL_KEYBOARD_ENTER_META")
+            }
+            Self::EVENT_DATA_VIRTUAL_KEYBOARD_SHOWN_META => {
+                Some("EVENT_DATA_VIRTUAL_KEYBOARD_SHOWN_META")
+            }
+            Self::EVENT_DATA_VIRTUAL_KEYBOARD_HIDDEN_META => {
+                Some("EVENT_DATA_VIRTUAL_KEYBOARD_HIDDEN_META")
+            }
             Self::EXTERNAL_CAMERA_OCULUS => Some("EXTERNAL_CAMERA_OCULUS"),
             Self::VULKAN_SWAPCHAIN_CREATE_INFO_META => Some("VULKAN_SWAPCHAIN_CREATE_INFO_META"),
             Self::PERFORMANCE_METRICS_STATE_META => Some("PERFORMANCE_METRICS_STATE_META"),
@@ -764,6 +839,19 @@ impl fmt::Debug for StructureType {
             }
             Self::SPACE_USER_CREATE_INFO_FB => Some("SPACE_USER_CREATE_INFO_FB"),
             Self::SYSTEM_HEADSET_ID_PROPERTIES_META => Some("SYSTEM_HEADSET_ID_PROPERTIES_META"),
+            Self::SYSTEM_PASSTHROUGH_COLOR_LUT_PROPERTIES_META => {
+                Some("SYSTEM_PASSTHROUGH_COLOR_LUT_PROPERTIES_META")
+            }
+            Self::PASSTHROUGH_COLOR_LUT_CREATE_INFO_META => {
+                Some("PASSTHROUGH_COLOR_LUT_CREATE_INFO_META")
+            }
+            Self::PASSTHROUGH_COLOR_LUT_UPDATE_INFO_META => {
+                Some("PASSTHROUGH_COLOR_LUT_UPDATE_INFO_META")
+            }
+            Self::PASSTHROUGH_COLOR_MAP_LUT_META => Some("PASSTHROUGH_COLOR_MAP_LUT_META"),
+            Self::PASSTHROUGH_COLOR_MAP_INTERPOLATED_LUT_META => {
+                Some("PASSTHROUGH_COLOR_MAP_INTERPOLATED_LUT_META")
+            }
             Self::PASSTHROUGH_CREATE_INFO_HTC => Some("PASSTHROUGH_CREATE_INFO_HTC"),
             Self::PASSTHROUGH_COLOR_HTC => Some("PASSTHROUGH_COLOR_HTC"),
             Self::PASSTHROUGH_MESH_TRANSFORM_INFO_HTC => {
@@ -779,6 +867,19 @@ impl fmt::Debug for StructureType {
             }
             Self::FORCE_FEEDBACK_CURL_APPLY_LOCATIONS_MNDX => {
                 Some("FORCE_FEEDBACK_CURL_APPLY_LOCATIONS_MNDX")
+            }
+            Self::HAND_TRACKING_DATA_SOURCE_INFO_EXT => Some("HAND_TRACKING_DATA_SOURCE_INFO_EXT"),
+            Self::HAND_TRACKING_DATA_SOURCE_STATE_EXT => {
+                Some("HAND_TRACKING_DATA_SOURCE_STATE_EXT")
+            }
+            Self::PLANE_DETECTOR_CREATE_INFO_EXT => Some("PLANE_DETECTOR_CREATE_INFO_EXT"),
+            Self::PLANE_DETECTOR_BEGIN_INFO_EXT => Some("PLANE_DETECTOR_BEGIN_INFO_EXT"),
+            Self::PLANE_DETECTOR_GET_INFO_EXT => Some("PLANE_DETECTOR_GET_INFO_EXT"),
+            Self::PLANE_DETECTOR_LOCATIONS_EXT => Some("PLANE_DETECTOR_LOCATIONS_EXT"),
+            Self::PLANE_DETECTOR_LOCATION_EXT => Some("PLANE_DETECTOR_LOCATION_EXT"),
+            Self::PLANE_DETECTOR_POLYGON_BUFFER_EXT => Some("PLANE_DETECTOR_POLYGON_BUFFER_EXT"),
+            Self::SYSTEM_PLANE_DETECTION_PROPERTIES_EXT => {
+                Some("SYSTEM_PLANE_DETECTION_PROPERTIES_EXT")
             }
             _ => None,
         };
@@ -971,8 +1072,14 @@ impl Result {
     pub const ERROR_SPACE_NETWORK_REQUEST_FAILED_FB: Result = Self(-1000169003i32);
     #[doc = "Cloud storage is required for this operation but is currently disabled."]
     pub const ERROR_SPACE_CLOUD_STORAGE_DISABLED_FB: Result = Self(-1000169004i32);
+    #[doc = "The provided data buffer did not match the required size."]
+    pub const ERROR_PASSTHROUGH_COLOR_LUT_BUFFER_SIZE_MISMATCH_META: Result = Self(-1000266000i32);
     #[doc = "Tracking optimization hint is already set for the domain."]
     pub const ERROR_HINT_ALREADY_SET_QCOM: Result = Self(-1000306000i32);
+    #[doc = "The space passed to the function was not locatable."]
+    pub const ERROR_SPACE_NOT_LOCATABLE_EXT: Result = Self(-1000429000i32);
+    #[doc = "The permission for this resource was not granted."]
+    pub const ERROR_PLANE_DETECTION_PERMISSION_DENIED_EXT: Result = Self(-1000429001i32);
     pub fn from_raw(x: i32) -> Self {
         Self(x)
     }
@@ -1131,7 +1238,14 @@ impl fmt::Debug for Result {
             Self::ERROR_SPACE_CLOUD_STORAGE_DISABLED_FB => {
                 Some("ERROR_SPACE_CLOUD_STORAGE_DISABLED_FB")
             }
+            Self::ERROR_PASSTHROUGH_COLOR_LUT_BUFFER_SIZE_MISMATCH_META => {
+                Some("ERROR_PASSTHROUGH_COLOR_LUT_BUFFER_SIZE_MISMATCH_META")
+            }
             Self::ERROR_HINT_ALREADY_SET_QCOM => Some("ERROR_HINT_ALREADY_SET_QCOM"),
+            Self::ERROR_SPACE_NOT_LOCATABLE_EXT => Some("ERROR_SPACE_NOT_LOCATABLE_EXT"),
+            Self::ERROR_PLANE_DETECTION_PERMISSION_DENIED_EXT => {
+                Some("ERROR_PLANE_DETECTION_PERMISSION_DENIED_EXT")
+            }
             _ => None,
         };
         fmt_enum(fmt, self.0, name)
@@ -1139,7 +1253,7 @@ impl fmt::Debug for Result {
 }
 impl fmt::Display for Result {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        let reason = match * self { Self :: SUCCESS => Some ("function successfully completed") , Self :: TIMEOUT_EXPIRED => Some ("the specified timeout time occurred before the operation could complete") , Self :: SESSION_LOSS_PENDING => Some ("the session will be lost soon") , Self :: EVENT_UNAVAILABLE => Some ("no event was available") , Self :: SPACE_BOUNDS_UNAVAILABLE => Some ("the space's bounds are not known at the moment") , Self :: SESSION_NOT_FOCUSED => Some ("the session is not in the focused state") , Self :: FRAME_DISCARDED => Some ("a frame has been discarded from composition") , Self :: ERROR_VALIDATION_FAILURE => Some ("the function usage was invalid in some way") , Self :: ERROR_RUNTIME_FAILURE => Some ("the runtime failed to handle the function in an unexpected way that is not covered by another error result") , Self :: ERROR_OUT_OF_MEMORY => Some ("a memory allocation has failed") , Self :: ERROR_API_VERSION_UNSUPPORTED => Some ("the runtime does not support the requested API version") , Self :: ERROR_INITIALIZATION_FAILED => Some ("initialization of object could not be completed") , Self :: ERROR_FUNCTION_UNSUPPORTED => Some ("the requested function was not found or is otherwise unsupported") , Self :: ERROR_FEATURE_UNSUPPORTED => Some ("the requested feature is not supported") , Self :: ERROR_EXTENSION_NOT_PRESENT => Some ("a requested extension is not supported") , Self :: ERROR_LIMIT_REACHED => Some ("the runtime supports no more of the requested resource") , Self :: ERROR_SIZE_INSUFFICIENT => Some ("the supplied size was smaller than required") , Self :: ERROR_HANDLE_INVALID => Some ("a supplied object handle was invalid") , Self :: ERROR_INSTANCE_LOST => Some ("the XrInstance was lost or could not be found. It will need to be destroyed and optionally recreated") , Self :: ERROR_SESSION_RUNNING => Some ("the session is already running") , Self :: ERROR_SESSION_NOT_RUNNING => Some ("the session is not yet running") , Self :: ERROR_SESSION_LOST => Some ("the XrSession was lost. It will need to be destroyed and optionally recreated") , Self :: ERROR_SYSTEM_INVALID => Some ("the provided XrSystemId was invalid") , Self :: ERROR_PATH_INVALID => Some ("the provided XrPath was not valid") , Self :: ERROR_PATH_COUNT_EXCEEDED => Some ("the maximum number of supported semantic paths has been reached") , Self :: ERROR_PATH_FORMAT_INVALID => Some ("the semantic path character format is invalid") , Self :: ERROR_PATH_UNSUPPORTED => Some ("the semantic path is unsupported") , Self :: ERROR_LAYER_INVALID => Some ("the layer was NULL or otherwise invalid") , Self :: ERROR_LAYER_LIMIT_EXCEEDED => Some ("the number of specified layers is greater than the supported number") , Self :: ERROR_SWAPCHAIN_RECT_INVALID => Some ("the image rect was negatively sized or otherwise invalid") , Self :: ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED => Some ("the image format is not supported by the runtime or platform") , Self :: ERROR_ACTION_TYPE_MISMATCH => Some ("the API used to retrieve an action's state does not match the action's type") , Self :: ERROR_SESSION_NOT_READY => Some ("the session is not in the ready state") , Self :: ERROR_SESSION_NOT_STOPPING => Some ("the session is not in the stopping state") , Self :: ERROR_TIME_INVALID => Some ("the provided XrTime was zero, negative, or out of range") , Self :: ERROR_REFERENCE_SPACE_UNSUPPORTED => Some ("the specified reference space is not supported by the runtime or system") , Self :: ERROR_FILE_ACCESS_ERROR => Some ("the file could not be accessed") , Self :: ERROR_FILE_CONTENTS_INVALID => Some ("the file's contents were invalid") , Self :: ERROR_FORM_FACTOR_UNSUPPORTED => Some ("the specified form factor is not supported by the current runtime or platform") , Self :: ERROR_FORM_FACTOR_UNAVAILABLE => Some ("the specified form factor is supported, but the device is currently not available, e.g. not plugged in or powered off") , Self :: ERROR_API_LAYER_NOT_PRESENT => Some ("a requested API layer is not present or could not be loaded") , Self :: ERROR_CALL_ORDER_INVALID => Some ("the call was made without having made a previously required call") , Self :: ERROR_GRAPHICS_DEVICE_INVALID => Some ("the given graphics device is not in a valid state. The graphics device could be lost or initialized without meeting graphics requirements") , Self :: ERROR_POSE_INVALID => Some ("the supplied pose was invalid with respect to the requirements") , Self :: ERROR_INDEX_OUT_OF_RANGE => Some ("the supplied index was outside the range of valid indices") , Self :: ERROR_VIEW_CONFIGURATION_TYPE_UNSUPPORTED => Some ("the specified view configuration type is not supported by the runtime or platform") , Self :: ERROR_ENVIRONMENT_BLEND_MODE_UNSUPPORTED => Some ("the specified environment blend mode is not supported by the runtime or platform") , Self :: ERROR_NAME_DUPLICATED => Some ("the name provided was a duplicate of an already-existing resource") , Self :: ERROR_NAME_INVALID => Some ("the name provided was invalid") , Self :: ERROR_ACTIONSET_NOT_ATTACHED => Some ("a referenced action set is not attached to the session") , Self :: ERROR_ACTIONSETS_ALREADY_ATTACHED => Some ("the session already has attached action sets") , Self :: ERROR_LOCALIZED_NAME_DUPLICATED => Some ("the localized name provided was a duplicate of an already-existing resource") , Self :: ERROR_LOCALIZED_NAME_INVALID => Some ("the localized name provided was invalid") , Self :: ERROR_GRAPHICS_REQUIREMENTS_CALL_MISSING => Some ("the xrGetGraphicsRequirements* call was not made before calling xrCreateSession") , Self :: ERROR_RUNTIME_UNAVAILABLE => Some ("the loader was unable to find or load a runtime") , Self :: ERROR_ANDROID_THREAD_SETTINGS_ID_INVALID_KHR => Some ("xrSetAndroidApplicationThreadKHR failed as thread id is invalid") , Self :: ERROR_ANDROID_THREAD_SETTINGS_FAILURE_KHR => Some ("xrSetAndroidApplicationThreadKHR failed setting the thread attributes/priority") , Self :: ERROR_CREATE_SPATIAL_ANCHOR_FAILED_MSFT => Some ("spatial anchor could not be created at that location") , Self :: ERROR_SECONDARY_VIEW_CONFIGURATION_TYPE_NOT_ENABLED_MSFT => Some ("the secondary view configuration was not enabled when creating the session") , Self :: ERROR_CONTROLLER_MODEL_KEY_INVALID_MSFT => Some ("the controller model key is invalid") , Self :: ERROR_REPROJECTION_MODE_UNSUPPORTED_MSFT => Some ("the reprojection mode is not supported") , Self :: ERROR_COMPUTE_NEW_SCENE_NOT_COMPLETED_MSFT => Some ("compute new scene not completed") , Self :: ERROR_SCENE_COMPONENT_ID_INVALID_MSFT => Some ("scene component id invalid") , Self :: ERROR_SCENE_COMPONENT_TYPE_MISMATCH_MSFT => Some ("scene component type mismatch") , Self :: ERROR_SCENE_MESH_BUFFER_ID_INVALID_MSFT => Some ("scene mesh buffer id invalid") , Self :: ERROR_SCENE_COMPUTE_FEATURE_INCOMPATIBLE_MSFT => Some ("scene compute feature incompatible") , Self :: ERROR_SCENE_COMPUTE_CONSISTENCY_MISMATCH_MSFT => Some ("scene compute consistency mismatch") , Self :: ERROR_DISPLAY_REFRESH_RATE_UNSUPPORTED_FB => Some ("the display refresh rate is not supported by the platform") , Self :: ERROR_COLOR_SPACE_UNSUPPORTED_FB => Some ("the color space is not supported by the runtime") , Self :: ERROR_SPACE_COMPONENT_NOT_SUPPORTED_FB => Some ("the component type is not supported for this space") , Self :: ERROR_SPACE_COMPONENT_NOT_ENABLED_FB => Some ("the required component is not enabled for this space") , Self :: ERROR_SPACE_COMPONENT_STATUS_PENDING_FB => Some ("a request to set the component's status is currently pending") , Self :: ERROR_SPACE_COMPONENT_STATUS_ALREADY_SET_FB => Some ("the component is already set to the requested value") , Self :: ERROR_UNEXPECTED_STATE_PASSTHROUGH_FB => Some ("the object state is unexpected for the issued command") , Self :: ERROR_FEATURE_ALREADY_CREATED_PASSTHROUGH_FB => Some ("trying to create an MR feature when one was already created and only one instance is allowed") , Self :: ERROR_FEATURE_REQUIRED_PASSTHROUGH_FB => Some ("requested functionality requires a feature to be created first") , Self :: ERROR_NOT_PERMITTED_PASSTHROUGH_FB => Some ("requested functionality is not permitted - application is not allowed to perform the requested operation") , Self :: ERROR_INSUFFICIENT_RESOURCES_PASSTHROUGH_FB => Some ("there weren't sufficient resources available to perform an operation") , Self :: ERROR_UNKNOWN_PASSTHROUGH_FB => Some ("unknown Passthrough error (no further details provided)") , Self :: ERROR_RENDER_MODEL_KEY_INVALID_FB => Some ("the model key is invalid") , Self :: RENDER_MODEL_UNAVAILABLE_FB => Some ("the model is unavailable") , Self :: ERROR_MARKER_NOT_TRACKED_VARJO => Some ("marker tracking is disabled or the specified marker is not currently tracked") , Self :: ERROR_MARKER_ID_INVALID_VARJO => Some ("the specified marker ID is not valid") , Self :: ERROR_SPATIAL_ANCHOR_NAME_NOT_FOUND_MSFT => Some ("a spatial anchor was not found associated with the spatial anchor name provided") , Self :: ERROR_SPATIAL_ANCHOR_NAME_INVALID_MSFT => Some ("the spatial anchor name provided was not valid") , Self :: ERROR_SPACE_MAPPING_INSUFFICIENT_FB => Some ("anchor import from cloud or export from device failed") , Self :: ERROR_SPACE_LOCALIZATION_FAILED_FB => Some ("anchors were downloaded from the cloud but failed to be imported/aligned on the device") , Self :: ERROR_SPACE_NETWORK_TIMEOUT_FB => Some ("timeout occurred while waiting for network request to complete") , Self :: ERROR_SPACE_NETWORK_REQUEST_FAILED_FB => Some ("the network request failed") , Self :: ERROR_SPACE_CLOUD_STORAGE_DISABLED_FB => Some ("cloud storage is required for this operation but is currently disabled") , Self :: ERROR_HINT_ALREADY_SET_QCOM => Some ("tracking optimization hint is already set for the domain") , _ => None , } ;
+        let reason = match * self { Self :: SUCCESS => Some ("function successfully completed") , Self :: TIMEOUT_EXPIRED => Some ("the specified timeout time occurred before the operation could complete") , Self :: SESSION_LOSS_PENDING => Some ("the session will be lost soon") , Self :: EVENT_UNAVAILABLE => Some ("no event was available") , Self :: SPACE_BOUNDS_UNAVAILABLE => Some ("the space's bounds are not known at the moment") , Self :: SESSION_NOT_FOCUSED => Some ("the session is not in the focused state") , Self :: FRAME_DISCARDED => Some ("a frame has been discarded from composition") , Self :: ERROR_VALIDATION_FAILURE => Some ("the function usage was invalid in some way") , Self :: ERROR_RUNTIME_FAILURE => Some ("the runtime failed to handle the function in an unexpected way that is not covered by another error result") , Self :: ERROR_OUT_OF_MEMORY => Some ("a memory allocation has failed") , Self :: ERROR_API_VERSION_UNSUPPORTED => Some ("the runtime does not support the requested API version") , Self :: ERROR_INITIALIZATION_FAILED => Some ("initialization of object could not be completed") , Self :: ERROR_FUNCTION_UNSUPPORTED => Some ("the requested function was not found or is otherwise unsupported") , Self :: ERROR_FEATURE_UNSUPPORTED => Some ("the requested feature is not supported") , Self :: ERROR_EXTENSION_NOT_PRESENT => Some ("a requested extension is not supported") , Self :: ERROR_LIMIT_REACHED => Some ("the runtime supports no more of the requested resource") , Self :: ERROR_SIZE_INSUFFICIENT => Some ("the supplied size was smaller than required") , Self :: ERROR_HANDLE_INVALID => Some ("a supplied object handle was invalid") , Self :: ERROR_INSTANCE_LOST => Some ("the XrInstance was lost or could not be found. It will need to be destroyed and optionally recreated") , Self :: ERROR_SESSION_RUNNING => Some ("the session is already running") , Self :: ERROR_SESSION_NOT_RUNNING => Some ("the session is not yet running") , Self :: ERROR_SESSION_LOST => Some ("the XrSession was lost. It will need to be destroyed and optionally recreated") , Self :: ERROR_SYSTEM_INVALID => Some ("the provided XrSystemId was invalid") , Self :: ERROR_PATH_INVALID => Some ("the provided XrPath was not valid") , Self :: ERROR_PATH_COUNT_EXCEEDED => Some ("the maximum number of supported semantic paths has been reached") , Self :: ERROR_PATH_FORMAT_INVALID => Some ("the semantic path character format is invalid") , Self :: ERROR_PATH_UNSUPPORTED => Some ("the semantic path is unsupported") , Self :: ERROR_LAYER_INVALID => Some ("the layer was NULL or otherwise invalid") , Self :: ERROR_LAYER_LIMIT_EXCEEDED => Some ("the number of specified layers is greater than the supported number") , Self :: ERROR_SWAPCHAIN_RECT_INVALID => Some ("the image rect was negatively sized or otherwise invalid") , Self :: ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED => Some ("the image format is not supported by the runtime or platform") , Self :: ERROR_ACTION_TYPE_MISMATCH => Some ("the API used to retrieve an action's state does not match the action's type") , Self :: ERROR_SESSION_NOT_READY => Some ("the session is not in the ready state") , Self :: ERROR_SESSION_NOT_STOPPING => Some ("the session is not in the stopping state") , Self :: ERROR_TIME_INVALID => Some ("the provided XrTime was zero, negative, or out of range") , Self :: ERROR_REFERENCE_SPACE_UNSUPPORTED => Some ("the specified reference space is not supported by the runtime or system") , Self :: ERROR_FILE_ACCESS_ERROR => Some ("the file could not be accessed") , Self :: ERROR_FILE_CONTENTS_INVALID => Some ("the file's contents were invalid") , Self :: ERROR_FORM_FACTOR_UNSUPPORTED => Some ("the specified form factor is not supported by the current runtime or platform") , Self :: ERROR_FORM_FACTOR_UNAVAILABLE => Some ("the specified form factor is supported, but the device is currently not available, e.g. not plugged in or powered off") , Self :: ERROR_API_LAYER_NOT_PRESENT => Some ("a requested API layer is not present or could not be loaded") , Self :: ERROR_CALL_ORDER_INVALID => Some ("the call was made without having made a previously required call") , Self :: ERROR_GRAPHICS_DEVICE_INVALID => Some ("the given graphics device is not in a valid state. The graphics device could be lost or initialized without meeting graphics requirements") , Self :: ERROR_POSE_INVALID => Some ("the supplied pose was invalid with respect to the requirements") , Self :: ERROR_INDEX_OUT_OF_RANGE => Some ("the supplied index was outside the range of valid indices") , Self :: ERROR_VIEW_CONFIGURATION_TYPE_UNSUPPORTED => Some ("the specified view configuration type is not supported by the runtime or platform") , Self :: ERROR_ENVIRONMENT_BLEND_MODE_UNSUPPORTED => Some ("the specified environment blend mode is not supported by the runtime or platform") , Self :: ERROR_NAME_DUPLICATED => Some ("the name provided was a duplicate of an already-existing resource") , Self :: ERROR_NAME_INVALID => Some ("the name provided was invalid") , Self :: ERROR_ACTIONSET_NOT_ATTACHED => Some ("a referenced action set is not attached to the session") , Self :: ERROR_ACTIONSETS_ALREADY_ATTACHED => Some ("the session already has attached action sets") , Self :: ERROR_LOCALIZED_NAME_DUPLICATED => Some ("the localized name provided was a duplicate of an already-existing resource") , Self :: ERROR_LOCALIZED_NAME_INVALID => Some ("the localized name provided was invalid") , Self :: ERROR_GRAPHICS_REQUIREMENTS_CALL_MISSING => Some ("the xrGetGraphicsRequirements* call was not made before calling xrCreateSession") , Self :: ERROR_RUNTIME_UNAVAILABLE => Some ("the loader was unable to find or load a runtime") , Self :: ERROR_ANDROID_THREAD_SETTINGS_ID_INVALID_KHR => Some ("xrSetAndroidApplicationThreadKHR failed as thread id is invalid") , Self :: ERROR_ANDROID_THREAD_SETTINGS_FAILURE_KHR => Some ("xrSetAndroidApplicationThreadKHR failed setting the thread attributes/priority") , Self :: ERROR_CREATE_SPATIAL_ANCHOR_FAILED_MSFT => Some ("spatial anchor could not be created at that location") , Self :: ERROR_SECONDARY_VIEW_CONFIGURATION_TYPE_NOT_ENABLED_MSFT => Some ("the secondary view configuration was not enabled when creating the session") , Self :: ERROR_CONTROLLER_MODEL_KEY_INVALID_MSFT => Some ("the controller model key is invalid") , Self :: ERROR_REPROJECTION_MODE_UNSUPPORTED_MSFT => Some ("the reprojection mode is not supported") , Self :: ERROR_COMPUTE_NEW_SCENE_NOT_COMPLETED_MSFT => Some ("compute new scene not completed") , Self :: ERROR_SCENE_COMPONENT_ID_INVALID_MSFT => Some ("scene component id invalid") , Self :: ERROR_SCENE_COMPONENT_TYPE_MISMATCH_MSFT => Some ("scene component type mismatch") , Self :: ERROR_SCENE_MESH_BUFFER_ID_INVALID_MSFT => Some ("scene mesh buffer id invalid") , Self :: ERROR_SCENE_COMPUTE_FEATURE_INCOMPATIBLE_MSFT => Some ("scene compute feature incompatible") , Self :: ERROR_SCENE_COMPUTE_CONSISTENCY_MISMATCH_MSFT => Some ("scene compute consistency mismatch") , Self :: ERROR_DISPLAY_REFRESH_RATE_UNSUPPORTED_FB => Some ("the display refresh rate is not supported by the platform") , Self :: ERROR_COLOR_SPACE_UNSUPPORTED_FB => Some ("the color space is not supported by the runtime") , Self :: ERROR_SPACE_COMPONENT_NOT_SUPPORTED_FB => Some ("the component type is not supported for this space") , Self :: ERROR_SPACE_COMPONENT_NOT_ENABLED_FB => Some ("the required component is not enabled for this space") , Self :: ERROR_SPACE_COMPONENT_STATUS_PENDING_FB => Some ("a request to set the component's status is currently pending") , Self :: ERROR_SPACE_COMPONENT_STATUS_ALREADY_SET_FB => Some ("the component is already set to the requested value") , Self :: ERROR_UNEXPECTED_STATE_PASSTHROUGH_FB => Some ("the object state is unexpected for the issued command") , Self :: ERROR_FEATURE_ALREADY_CREATED_PASSTHROUGH_FB => Some ("trying to create an MR feature when one was already created and only one instance is allowed") , Self :: ERROR_FEATURE_REQUIRED_PASSTHROUGH_FB => Some ("requested functionality requires a feature to be created first") , Self :: ERROR_NOT_PERMITTED_PASSTHROUGH_FB => Some ("requested functionality is not permitted - application is not allowed to perform the requested operation") , Self :: ERROR_INSUFFICIENT_RESOURCES_PASSTHROUGH_FB => Some ("there weren't sufficient resources available to perform an operation") , Self :: ERROR_UNKNOWN_PASSTHROUGH_FB => Some ("unknown Passthrough error (no further details provided)") , Self :: ERROR_RENDER_MODEL_KEY_INVALID_FB => Some ("the model key is invalid") , Self :: RENDER_MODEL_UNAVAILABLE_FB => Some ("the model is unavailable") , Self :: ERROR_MARKER_NOT_TRACKED_VARJO => Some ("marker tracking is disabled or the specified marker is not currently tracked") , Self :: ERROR_MARKER_ID_INVALID_VARJO => Some ("the specified marker ID is not valid") , Self :: ERROR_SPATIAL_ANCHOR_NAME_NOT_FOUND_MSFT => Some ("a spatial anchor was not found associated with the spatial anchor name provided") , Self :: ERROR_SPATIAL_ANCHOR_NAME_INVALID_MSFT => Some ("the spatial anchor name provided was not valid") , Self :: ERROR_SPACE_MAPPING_INSUFFICIENT_FB => Some ("anchor import from cloud or export from device failed") , Self :: ERROR_SPACE_LOCALIZATION_FAILED_FB => Some ("anchors were downloaded from the cloud but failed to be imported/aligned on the device") , Self :: ERROR_SPACE_NETWORK_TIMEOUT_FB => Some ("timeout occurred while waiting for network request to complete") , Self :: ERROR_SPACE_NETWORK_REQUEST_FAILED_FB => Some ("the network request failed") , Self :: ERROR_SPACE_CLOUD_STORAGE_DISABLED_FB => Some ("cloud storage is required for this operation but is currently disabled") , Self :: ERROR_PASSTHROUGH_COLOR_LUT_BUFFER_SIZE_MISMATCH_META => Some ("the provided data buffer did not match the required size") , Self :: ERROR_HINT_ALREADY_SET_QCOM => Some ("tracking optimization hint is already set for the domain") , Self :: ERROR_SPACE_NOT_LOCATABLE_EXT => Some ("the space passed to the function was not locatable") , Self :: ERROR_PLANE_DETECTION_PERMISSION_DENIED_EXT => Some ("the permission for this resource was not granted") , _ => None , } ;
         if let Some(reason) = reason {
             fmt.pad(reason)
         } else {
@@ -1198,10 +1312,16 @@ impl ObjectType {
     pub const FACE_TRACKER_FB: ObjectType = Self(1000201000i32);
     #[doc = "XrEyeTrackerFB"]
     pub const EYE_TRACKER_FB: ObjectType = Self(1000202000i32);
+    #[doc = "XrVirtualKeyboardMETA"]
+    pub const VIRTUAL_KEYBOARD_META: ObjectType = Self(1000219000i32);
     #[doc = "XrSpaceUserFB"]
     pub const SPACE_USER_FB: ObjectType = Self(1000241000i32);
+    #[doc = "XrPassthroughColorLutMETA"]
+    pub const PASSTHROUGH_COLOR_LUT_META: ObjectType = Self(1000266000i32);
     #[doc = "XrPassthroughHTC"]
     pub const PASSTHROUGH_HTC: ObjectType = Self(1000317000i32);
+    #[doc = "XrPlaneDetectorEXT"]
+    pub const PLANE_DETECTOR_EXT: ObjectType = Self(1000429000i32);
     pub fn from_raw(x: i32) -> Self {
         Self(x)
     }
@@ -1237,8 +1357,11 @@ impl fmt::Debug for ObjectType {
             }
             Self::FACE_TRACKER_FB => Some("FACE_TRACKER_FB"),
             Self::EYE_TRACKER_FB => Some("EYE_TRACKER_FB"),
+            Self::VIRTUAL_KEYBOARD_META => Some("VIRTUAL_KEYBOARD_META"),
             Self::SPACE_USER_FB => Some("SPACE_USER_FB"),
+            Self::PASSTHROUGH_COLOR_LUT_META => Some("PASSTHROUGH_COLOR_LUT_META"),
             Self::PASSTHROUGH_HTC => Some("PASSTHROUGH_HTC"),
+            Self::PLANE_DETECTOR_EXT => Some("PLANE_DETECTOR_EXT"),
             _ => None,
         };
         fmt_enum(fmt, self.0, name)
@@ -1893,6 +2016,30 @@ impl fmt::Debug for ExternalCameraAttachedToDeviceOCULUS {
             Self::HMD => Some("HMD"),
             Self::LTOUCH => Some("LTOUCH"),
             Self::RTOUCH => Some("RTOUCH"),
+            _ => None,
+        };
+        fmt_enum(fmt, self.0, name)
+    }
+}
+#[doc = "See [XrPassthroughColorLutChannelsMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPassthroughColorLutChannelsMETA)"]
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct PassthroughColorLutChannelsMETA(i32);
+impl PassthroughColorLutChannelsMETA {
+    pub const RGB: PassthroughColorLutChannelsMETA = Self(1i32);
+    pub const RGBA: PassthroughColorLutChannelsMETA = Self(2i32);
+    pub fn from_raw(x: i32) -> Self {
+        Self(x)
+    }
+    pub fn into_raw(self) -> i32 {
+        self.0
+    }
+}
+impl fmt::Debug for PassthroughColorLutChannelsMETA {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            Self::RGB => Some("RGB"),
+            Self::RGBA => Some("RGBA"),
             _ => None,
         };
         fmt_enum(fmt, self.0, name)
@@ -2722,6 +2869,176 @@ impl fmt::Debug for ForceFeedbackCurlLocationMNDX {
         fmt_enum(fmt, self.0, name)
     }
 }
+#[doc = "See [XrPlaneDetectionStateEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectionStateEXT)"]
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct PlaneDetectionStateEXT(i32);
+impl PlaneDetectionStateEXT {
+    pub const NONE: PlaneDetectionStateEXT = Self(0i32);
+    pub const PENDING: PlaneDetectionStateEXT = Self(1i32);
+    pub const DONE: PlaneDetectionStateEXT = Self(2i32);
+    pub const ERROR: PlaneDetectionStateEXT = Self(3i32);
+    pub const FATAL: PlaneDetectionStateEXT = Self(4i32);
+    pub fn from_raw(x: i32) -> Self {
+        Self(x)
+    }
+    pub fn into_raw(self) -> i32 {
+        self.0
+    }
+}
+impl fmt::Debug for PlaneDetectionStateEXT {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            Self::NONE => Some("NONE"),
+            Self::PENDING => Some("PENDING"),
+            Self::DONE => Some("DONE"),
+            Self::ERROR => Some("ERROR"),
+            Self::FATAL => Some("FATAL"),
+            _ => None,
+        };
+        fmt_enum(fmt, self.0, name)
+    }
+}
+#[doc = "See [XrPlaneDetectorOrientationEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectorOrientationEXT)"]
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct PlaneDetectorOrientationEXT(i32);
+impl PlaneDetectorOrientationEXT {
+    #[doc = "The detected plane is horizontal and faces upward (e.g. floor)."]
+    pub const HORIZONTAL_UPWARD: PlaneDetectorOrientationEXT = Self(0i32);
+    #[doc = "The detected plane is horizontal and faces downward (e.g. ceiling)."]
+    pub const HORIZONTAL_DOWNWARD: PlaneDetectorOrientationEXT = Self(1i32);
+    #[doc = "The detected plane is vertical (e.g. wall)."]
+    pub const VERTICAL: PlaneDetectorOrientationEXT = Self(2i32);
+    #[doc = "The detected plane has an arbitrary, non-vertical and non-horizontal orientation."]
+    pub const ARBITRARY: PlaneDetectorOrientationEXT = Self(3i32);
+    pub fn from_raw(x: i32) -> Self {
+        Self(x)
+    }
+    pub fn into_raw(self) -> i32 {
+        self.0
+    }
+}
+impl fmt::Debug for PlaneDetectorOrientationEXT {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            Self::HORIZONTAL_UPWARD => Some("HORIZONTAL_UPWARD"),
+            Self::HORIZONTAL_DOWNWARD => Some("HORIZONTAL_DOWNWARD"),
+            Self::VERTICAL => Some("VERTICAL"),
+            Self::ARBITRARY => Some("ARBITRARY"),
+            _ => None,
+        };
+        fmt_enum(fmt, self.0, name)
+    }
+}
+#[doc = "See [XrPlaneDetectorSemanticTypeEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectorSemanticTypeEXT)"]
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct PlaneDetectorSemanticTypeEXT(i32);
+impl PlaneDetectorSemanticTypeEXT {
+    #[doc = "The runtime was unable to classify this plane."]
+    pub const UNDEFINED: PlaneDetectorSemanticTypeEXT = Self(0i32);
+    #[doc = "The detected plane is a ceiling."]
+    pub const CEILING: PlaneDetectorSemanticTypeEXT = Self(1i32);
+    #[doc = "The detected plane is a floor."]
+    pub const FLOOR: PlaneDetectorSemanticTypeEXT = Self(2i32);
+    #[doc = "The detected plane is a wall."]
+    pub const WALL: PlaneDetectorSemanticTypeEXT = Self(3i32);
+    #[doc = "The detected plane is a platform, like a table."]
+    pub const PLATFORM: PlaneDetectorSemanticTypeEXT = Self(4i32);
+    pub fn from_raw(x: i32) -> Self {
+        Self(x)
+    }
+    pub fn into_raw(self) -> i32 {
+        self.0
+    }
+}
+impl fmt::Debug for PlaneDetectorSemanticTypeEXT {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            Self::UNDEFINED => Some("UNDEFINED"),
+            Self::CEILING => Some("CEILING"),
+            Self::FLOOR => Some("FLOOR"),
+            Self::WALL => Some("WALL"),
+            Self::PLATFORM => Some("PLATFORM"),
+            _ => None,
+        };
+        fmt_enum(fmt, self.0, name)
+    }
+}
+#[doc = "See [XrVirtualKeyboardLocationTypeMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardLocationTypeMETA)"]
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct VirtualKeyboardLocationTypeMETA(i32);
+impl VirtualKeyboardLocationTypeMETA {
+    #[doc = "Indicates that the application will provide the position and scale of the keyboard."]
+    pub const CUSTOM: VirtualKeyboardLocationTypeMETA = Self(0i32);
+    #[doc = "Indicates that the runtime will set the position and scale for far field keyboard."]
+    pub const FAR: VirtualKeyboardLocationTypeMETA = Self(1i32);
+    #[doc = "Indicates that the runtime will set the position and scale for direct interaction keyboard."]
+    pub const DIRECT: VirtualKeyboardLocationTypeMETA = Self(2i32);
+    pub fn from_raw(x: i32) -> Self {
+        Self(x)
+    }
+    pub fn into_raw(self) -> i32 {
+        self.0
+    }
+}
+impl fmt::Debug for VirtualKeyboardLocationTypeMETA {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            Self::CUSTOM => Some("CUSTOM"),
+            Self::FAR => Some("FAR"),
+            Self::DIRECT => Some("DIRECT"),
+            _ => None,
+        };
+        fmt_enum(fmt, self.0, name)
+    }
+}
+#[doc = "See [XrVirtualKeyboardInputSourceMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardInputSourceMETA)"]
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct VirtualKeyboardInputSourceMETA(i32);
+impl VirtualKeyboardInputSourceMETA {
+    #[doc = "Left controller ray."]
+    pub const CONTROLLER_RAY_LEFT: VirtualKeyboardInputSourceMETA = Self(1i32);
+    #[doc = "Right controller ray."]
+    pub const CONTROLLER_RAY_RIGHT: VirtualKeyboardInputSourceMETA = Self(2i32);
+    #[doc = "Left hand ray."]
+    pub const HAND_RAY_LEFT: VirtualKeyboardInputSourceMETA = Self(3i32);
+    #[doc = "Right hand ray."]
+    pub const HAND_RAY_RIGHT: VirtualKeyboardInputSourceMETA = Self(4i32);
+    #[doc = "Left controller direct touch."]
+    pub const CONTROLLER_DIRECT_LEFT: VirtualKeyboardInputSourceMETA = Self(5i32);
+    #[doc = "Right controller direct touch."]
+    pub const CONTROLLER_DIRECT_RIGHT: VirtualKeyboardInputSourceMETA = Self(6i32);
+    #[doc = "Left hand direct touch."]
+    pub const HAND_DIRECT_INDEX_TIP_LEFT: VirtualKeyboardInputSourceMETA = Self(7i32);
+    #[doc = "Right hand direct touch."]
+    pub const HAND_DIRECT_INDEX_TIP_RIGHT: VirtualKeyboardInputSourceMETA = Self(8i32);
+    pub fn from_raw(x: i32) -> Self {
+        Self(x)
+    }
+    pub fn into_raw(self) -> i32 {
+        self.0
+    }
+}
+impl fmt::Debug for VirtualKeyboardInputSourceMETA {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            Self::CONTROLLER_RAY_LEFT => Some("CONTROLLER_RAY_LEFT"),
+            Self::CONTROLLER_RAY_RIGHT => Some("CONTROLLER_RAY_RIGHT"),
+            Self::HAND_RAY_LEFT => Some("HAND_RAY_LEFT"),
+            Self::HAND_RAY_RIGHT => Some("HAND_RAY_RIGHT"),
+            Self::CONTROLLER_DIRECT_LEFT => Some("CONTROLLER_DIRECT_LEFT"),
+            Self::CONTROLLER_DIRECT_RIGHT => Some("CONTROLLER_DIRECT_RIGHT"),
+            Self::HAND_DIRECT_INDEX_TIP_LEFT => Some("HAND_DIRECT_INDEX_TIP_LEFT"),
+            Self::HAND_DIRECT_INDEX_TIP_RIGHT => Some("HAND_DIRECT_INDEX_TIP_RIGHT"),
+            _ => None,
+        };
+        fmt_enum(fmt, self.0, name)
+    }
+}
 #[doc = "See [XrHandEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrHandEXT)"]
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -2861,6 +3178,32 @@ impl fmt::Debug for HandJointsMotionRangeEXT {
         let name = match *self {
             Self::UNOBSTRUCTED => Some("UNOBSTRUCTED"),
             Self::CONFORMING_TO_CONTROLLER => Some("CONFORMING_TO_CONTROLLER"),
+            _ => None,
+        };
+        fmt_enum(fmt, self.0, name)
+    }
+}
+#[doc = "See [XrHandTrackingDataSourceEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrHandTrackingDataSourceEXT)"]
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct HandTrackingDataSourceEXT(i32);
+impl HandTrackingDataSourceEXT {
+    #[doc = "This data source value indicates individual fingers and joints are tracked from unobstructed data source such as optical hand tracking, data gloves, or motion capture devices."]
+    pub const UNOBSTRUCTED: HandTrackingDataSourceEXT = Self(1i32);
+    #[doc = "This data source value indicates hand joints are inferred based on motion controller state."]
+    pub const CONTROLLER: HandTrackingDataSourceEXT = Self(2i32);
+    pub fn from_raw(x: i32) -> Self {
+        Self(x)
+    }
+    pub fn into_raw(self) -> i32 {
+        self.0
+    }
+}
+impl fmt::Debug for HandTrackingDataSourceEXT {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            Self::UNOBSTRUCTED => Some("UNOBSTRUCTED"),
+            Self::CONTROLLER => Some("CONTROLLER"),
             _ => None,
         };
         fmt_enum(fmt, self.0, name)
@@ -3615,6 +3958,17 @@ impl PassthroughCapabilityFlagsFB {
     pub const LAYER_DEPTH: PassthroughCapabilityFlagsFB = Self(1 << 2u64);
 }
 bitmask!(PassthroughCapabilityFlagsFB);
+#[doc = "See [XrSemanticLabelsSupportFlagsFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSemanticLabelsSupportFlagsFB)"]
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct SemanticLabelsSupportFlagsFB(u64);
+impl SemanticLabelsSupportFlagsFB {
+    #[doc = "If set, and the runtime reports the extensionVersion as 2 or greater, the runtime may: return multiple semantic labels separated by a comma without spaces. Otherwise, the runtime must: return a single semantic label."]
+    pub const MULTIPLE_SEMANTIC_LABELS: SemanticLabelsSupportFlagsFB = Self(1 << 0u64);
+    #[doc = "If set, and the runtime reports the extensionVersion as 3 or greater, the runtime must: return \"TABLE\" instead of \"DESK\" as a semantic label to the application. Otherwise, the runtime must: return \"DESK\" instead of \"TABLE\" as a semantic label to the application, when applicable."]
+    pub const ACCEPT_DESK_TO_TABLE_MIGRATION: SemanticLabelsSupportFlagsFB = Self(1 << 1u64);
+}
+bitmask!(SemanticLabelsSupportFlagsFB);
 #[doc = "See [XrHandTrackingAimFlagsFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrHandTrackingAimFlagsFB)"]
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -3740,6 +4094,15 @@ impl PerformanceMetricsCounterFlagsMETA {
     pub const FLOAT_VALUE_VALID: PerformanceMetricsCounterFlagsMETA = Self(1 << 2u64);
 }
 bitmask!(PerformanceMetricsCounterFlagsMETA);
+#[doc = "See [XrPassthroughPreferenceFlagsMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPassthroughPreferenceFlagsMETA)"]
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct PassthroughPreferenceFlagsMETA(u64);
+impl PassthroughPreferenceFlagsMETA {
+    #[doc = "Indicates that the runtime recommends apps to default to a mixed reality experience with passthrough (if supported)."]
+    pub const DEFAULT_TO_ACTIVE: PassthroughPreferenceFlagsMETA = Self(1 << 0u64);
+}
+bitmask!(PassthroughPreferenceFlagsMETA);
 #[doc = "See [XrFoveationDynamicFlagsHTC](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrFoveationDynamicFlagsHTC)"]
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -3773,6 +4136,45 @@ impl GlobalDimmerFrameEndInfoFlagsML {
     pub const ENABLED: GlobalDimmerFrameEndInfoFlagsML = Self(1 << 0u64);
 }
 bitmask!(GlobalDimmerFrameEndInfoFlagsML);
+#[doc = "See [XrPlaneDetectorFlagsEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectorFlagsEXT)"]
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct PlaneDetectorFlagsEXT(u64);
+impl PlaneDetectorFlagsEXT {
+    #[doc = "populate the plane contour information"]
+    pub const ENABLE_CONTOUR: PlaneDetectorFlagsEXT = Self(1 << 0u64);
+}
+bitmask!(PlaneDetectorFlagsEXT);
+#[doc = "See [XrPlaneDetectionCapabilityFlagsEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectionCapabilityFlagsEXT)"]
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct PlaneDetectionCapabilityFlagsEXT(u64);
+impl PlaneDetectionCapabilityFlagsEXT {
+    #[doc = "plane detection is supported"]
+    pub const PLANE_DETECTION: PlaneDetectionCapabilityFlagsEXT = Self(1 << 0u64);
+    #[doc = "polygon buffers for holes in planes can be generated"]
+    pub const PLANE_HOLES: PlaneDetectionCapabilityFlagsEXT = Self(1 << 1u64);
+    #[doc = "plane detection supports ceiling semantic classification"]
+    pub const SEMANTIC_CEILING: PlaneDetectionCapabilityFlagsEXT = Self(1 << 2u64);
+    #[doc = "plane detection supports floor semantic classification"]
+    pub const SEMANTIC_FLOOR: PlaneDetectionCapabilityFlagsEXT = Self(1 << 3u64);
+    #[doc = "plane detection supports wall semantic classification"]
+    pub const SEMANTIC_WALL: PlaneDetectionCapabilityFlagsEXT = Self(1 << 4u64);
+    #[doc = "plane detection supports platform semantic classification (for example table tops)"]
+    pub const SEMANTIC_PLATFORM: PlaneDetectionCapabilityFlagsEXT = Self(1 << 5u64);
+    #[doc = "plane detection supports plane orientation classification. If not supported planes are always classified as ARBITRARY."]
+    pub const ORIENTATION: PlaneDetectionCapabilityFlagsEXT = Self(1 << 6u64);
+}
+bitmask!(PlaneDetectionCapabilityFlagsEXT);
+#[doc = "See [XrVirtualKeyboardInputStateFlagsMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardInputStateFlagsMETA)"]
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct VirtualKeyboardInputStateFlagsMETA(u64);
+impl VirtualKeyboardInputStateFlagsMETA {
+    #[doc = "If the input source is considered 'pressed' at all. Pinch for hands, Primary button for controllers."]
+    pub const PRESSED: VirtualKeyboardInputStateFlagsMETA = Self(1 << 0u64);
+}
+bitmask!(VirtualKeyboardInputStateFlagsMETA);
 #[doc = "See [XrInstance](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance)"]
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -3873,6 +4275,21 @@ handle!(EyeTrackerFB);
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct SpaceUserFB(u64);
 handle!(SpaceUserFB);
+#[doc = "See [XrPassthroughColorLutMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPassthroughColorLutMETA)"]
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub struct PassthroughColorLutMETA(u64);
+handle!(PassthroughColorLutMETA);
+#[doc = "See [XrPlaneDetectorEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectorEXT)"]
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub struct PlaneDetectorEXT(u64);
+handle!(PlaneDetectorEXT);
+#[doc = "See [XrVirtualKeyboardMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardMETA)"]
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub struct VirtualKeyboardMETA(u64);
+handle!(VirtualKeyboardMETA);
 #[doc = "See [XrSpatialGraphNodeBindingMSFT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSpatialGraphNodeBindingMSFT)"]
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -3955,6 +4372,14 @@ pub struct Offset2Df {
 pub struct Extent2Df {
     pub width: f32,
     pub height: f32,
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
+#[doc = "See [XrExtent3DfEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrExtent3DfEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+pub struct Extent3DfEXT {
+    pub width: f32,
+    pub height: f32,
+    pub depth: f32,
 }
 #[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Default)]
@@ -5762,7 +6187,7 @@ impl CompositionLayerAlphaBlendFB {
 pub struct GraphicsBindingEGLMNDX {
     pub ty: StructureType,
     pub next: *const c_void,
-    pub get_proc_address: PFNEGLGETPROCADDRESSPROC,
+    pub get_proc_address: Option<pfn::EglGetProcAddressMNDX>,
     pub display: EGLDisplay,
     pub config: EGLConfig,
     pub context: EGLContext,
@@ -6224,6 +6649,42 @@ pub struct HandJointsMotionRangeInfoEXT {
 }
 impl HandJointsMotionRangeInfoEXT {
     pub const TYPE: StructureType = StructureType::HAND_JOINTS_MOTION_RANGE_INFO_EXT;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrHandTrackingDataSourceInfoEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrHandTrackingDataSourceInfoEXT) - defined by [XR_EXT_hand_tracking_data_source](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_hand_tracking_data_source)"]
+pub struct HandTrackingDataSourceInfoEXT {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub requested_data_source_count: u32,
+    pub requested_data_sources: *mut HandTrackingDataSourceEXT,
+}
+impl HandTrackingDataSourceInfoEXT {
+    pub const TYPE: StructureType = StructureType::HAND_TRACKING_DATA_SOURCE_INFO_EXT;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrHandTrackingDataSourceStateEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrHandTrackingDataSourceStateEXT) - defined by [XR_EXT_hand_tracking_data_source](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_hand_tracking_data_source)"]
+pub struct HandTrackingDataSourceStateEXT {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub is_active: Bool32,
+    pub data_source: HandTrackingDataSourceEXT,
+}
+impl HandTrackingDataSourceStateEXT {
+    pub const TYPE: StructureType = StructureType::HAND_TRACKING_DATA_SOURCE_STATE_EXT;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
 }
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
@@ -7613,6 +8074,18 @@ impl Boundary2DFB {
 }
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
+#[doc = "See [XrSemanticLabelsSupportInfoFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSemanticLabelsSupportInfoFB) - defined by [XR_FB_scene](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_FB_scene)"]
+pub struct SemanticLabelsSupportInfoFB {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub flags: SemanticLabelsSupportFlagsFB,
+    pub recognized_labels: *const c_char,
+}
+impl SemanticLabelsSupportInfoFB {
+    pub const TYPE: StructureType = StructureType::SEMANTIC_LABELS_SUPPORT_INFO_FB;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
 #[doc = "See [XrSceneCaptureRequestInfoFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSceneCaptureRequestInfoFB) - defined by [XR_FB_scene_capture](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_FB_scene_capture)"]
 pub struct SceneCaptureRequestInfoFB {
     pub ty: StructureType,
@@ -8351,6 +8824,17 @@ impl PerformanceMetricsCounterMETA {
 }
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPassthroughPreferencesMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPassthroughPreferencesMETA) - defined by [XR_META_passthrough_preferences](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_passthrough_preferences)"]
+pub struct PassthroughPreferencesMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub flags: PassthroughPreferenceFlagsMETA,
+}
+impl PassthroughPreferencesMETA {
+    pub const TYPE: StructureType = StructureType::PASSTHROUGH_PREFERENCES_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
 #[doc = "See [XrSystemHeadsetIdPropertiesMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemHeadsetIdPropertiesMETA) - defined by [XR_META_headset_id](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_headset_id)"]
 pub struct SystemHeadsetIdPropertiesMETA {
     pub ty: StructureType,
@@ -8371,6 +8855,73 @@ impl SystemHeadsetIdPropertiesMETA {
         }
         x
     }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPassthroughColorLutDataMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPassthroughColorLutDataMETA) - defined by [XR_META_passthrough_color_lut](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_passthrough_color_lut)"]
+pub struct PassthroughColorLutDataMETA {
+    pub buffer_size: u32,
+    pub buffer: *const u8,
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPassthroughColorLutCreateInfoMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPassthroughColorLutCreateInfoMETA) - defined by [XR_META_passthrough_color_lut](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_passthrough_color_lut)"]
+pub struct PassthroughColorLutCreateInfoMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub channels: PassthroughColorLutChannelsMETA,
+    pub resolution: u32,
+    pub data: PassthroughColorLutDataMETA,
+}
+impl PassthroughColorLutCreateInfoMETA {
+    pub const TYPE: StructureType = StructureType::PASSTHROUGH_COLOR_LUT_CREATE_INFO_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPassthroughColorLutUpdateInfoMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPassthroughColorLutUpdateInfoMETA) - defined by [XR_META_passthrough_color_lut](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_passthrough_color_lut)"]
+pub struct PassthroughColorLutUpdateInfoMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub data: PassthroughColorLutDataMETA,
+}
+impl PassthroughColorLutUpdateInfoMETA {
+    pub const TYPE: StructureType = StructureType::PASSTHROUGH_COLOR_LUT_UPDATE_INFO_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPassthroughColorMapLutMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPassthroughColorMapLutMETA) - defined by [XR_META_passthrough_color_lut](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_passthrough_color_lut)"]
+pub struct PassthroughColorMapLutMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub color_lut: PassthroughColorLutMETA,
+    pub weight: f32,
+}
+impl PassthroughColorMapLutMETA {
+    pub const TYPE: StructureType = StructureType::PASSTHROUGH_COLOR_MAP_LUT_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPassthroughColorMapInterpolatedLutMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPassthroughColorMapInterpolatedLutMETA) - defined by [XR_META_passthrough_color_lut](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_passthrough_color_lut)"]
+pub struct PassthroughColorMapInterpolatedLutMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub source_color_lut: PassthroughColorLutMETA,
+    pub target_color_lut: PassthroughColorLutMETA,
+    pub weight: f32,
+}
+impl PassthroughColorMapInterpolatedLutMETA {
+    pub const TYPE: StructureType = StructureType::PASSTHROUGH_COLOR_MAP_INTERPOLATED_LUT_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrSystemPassthroughColorLutPropertiesMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemPassthroughColorLutPropertiesMETA) - defined by [XR_META_passthrough_color_lut](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_passthrough_color_lut)"]
+pub struct SystemPassthroughColorLutPropertiesMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub max_color_lut_resolution: u32,
+}
+impl SystemPassthroughColorLutPropertiesMETA {
+    pub const TYPE: StructureType = StructureType::SYSTEM_PASSTHROUGH_COLOR_LUT_PROPERTIES_META;
 }
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
@@ -8574,6 +9125,379 @@ impl ForceFeedbackCurlApplyLocationsMNDX {
 pub struct ForceFeedbackCurlApplyLocationMNDX {
     pub location: ForceFeedbackCurlLocationMNDX,
     pub value: f32,
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrSystemPlaneDetectionPropertiesEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemPlaneDetectionPropertiesEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+pub struct SystemPlaneDetectionPropertiesEXT {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub supported_features: PlaneDetectionCapabilityFlagsEXT,
+}
+impl SystemPlaneDetectionPropertiesEXT {
+    pub const TYPE: StructureType = StructureType::SYSTEM_PLANE_DETECTION_PROPERTIES_EXT;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPlaneDetectorCreateInfoEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectorCreateInfoEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+pub struct PlaneDetectorCreateInfoEXT {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub flags: PlaneDetectorFlagsEXT,
+}
+impl PlaneDetectorCreateInfoEXT {
+    pub const TYPE: StructureType = StructureType::PLANE_DETECTOR_CREATE_INFO_EXT;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPlaneDetectorBeginInfoEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectorBeginInfoEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+pub struct PlaneDetectorBeginInfoEXT {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub base_space: Space,
+    pub time: Time,
+    pub orientation_count: u32,
+    pub orientations: *const PlaneDetectorOrientationEXT,
+    pub semantic_type_count: u32,
+    pub semantic_types: *const PlaneDetectorSemanticTypeEXT,
+    pub max_planes: u32,
+    pub min_area: f32,
+    pub bounding_box_pose: Posef,
+    pub bounding_box_extent: Extent3DfEXT,
+}
+impl PlaneDetectorBeginInfoEXT {
+    pub const TYPE: StructureType = StructureType::PLANE_DETECTOR_BEGIN_INFO_EXT;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPlaneDetectorGetInfoEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectorGetInfoEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+pub struct PlaneDetectorGetInfoEXT {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub base_space: Space,
+    pub time: Time,
+}
+impl PlaneDetectorGetInfoEXT {
+    pub const TYPE: StructureType = StructureType::PLANE_DETECTOR_GET_INFO_EXT;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPlaneDetectorLocationsEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectorLocationsEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+pub struct PlaneDetectorLocationsEXT {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub plane_location_capacity_input: u32,
+    pub plane_location_count_output: u32,
+    pub plane_locations: *mut PlaneDetectorLocationEXT,
+}
+impl PlaneDetectorLocationsEXT {
+    pub const TYPE: StructureType = StructureType::PLANE_DETECTOR_LOCATIONS_EXT;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPlaneDetectorLocationEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectorLocationEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+pub struct PlaneDetectorLocationEXT {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub plane_id: u64,
+    pub location_flags: SpaceLocationFlags,
+    pub pose: Posef,
+    pub extents: Extent2Df,
+    pub orientation: PlaneDetectorOrientationEXT,
+    pub semantic_type: PlaneDetectorSemanticTypeEXT,
+    pub polygon_buffer_count: u32,
+}
+impl PlaneDetectorLocationEXT {
+    pub const TYPE: StructureType = StructureType::PLANE_DETECTOR_LOCATION_EXT;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrPlaneDetectorPolygonBufferEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrPlaneDetectorPolygonBufferEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+pub struct PlaneDetectorPolygonBufferEXT {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub vertex_capacity_input: u32,
+    pub vertex_count_output: u32,
+    pub vertices: *mut Vector2f,
+}
+impl PlaneDetectorPolygonBufferEXT {
+    pub const TYPE: StructureType = StructureType::PLANE_DETECTOR_POLYGON_BUFFER_EXT;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrSystemVirtualKeyboardPropertiesMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemVirtualKeyboardPropertiesMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct SystemVirtualKeyboardPropertiesMETA {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub supports_virtual_keyboard: Bool32,
+}
+impl SystemVirtualKeyboardPropertiesMETA {
+    pub const TYPE: StructureType = StructureType::SYSTEM_VIRTUAL_KEYBOARD_PROPERTIES_META;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrVirtualKeyboardCreateInfoMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardCreateInfoMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct VirtualKeyboardCreateInfoMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+}
+impl VirtualKeyboardCreateInfoMETA {
+    pub const TYPE: StructureType = StructureType::VIRTUAL_KEYBOARD_CREATE_INFO_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrVirtualKeyboardSpaceCreateInfoMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardSpaceCreateInfoMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct VirtualKeyboardSpaceCreateInfoMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub location_type: VirtualKeyboardLocationTypeMETA,
+    pub space: Space,
+    pub pose_in_space: Posef,
+}
+impl VirtualKeyboardSpaceCreateInfoMETA {
+    pub const TYPE: StructureType = StructureType::VIRTUAL_KEYBOARD_SPACE_CREATE_INFO_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrVirtualKeyboardLocationInfoMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardLocationInfoMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct VirtualKeyboardLocationInfoMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub location_type: VirtualKeyboardLocationTypeMETA,
+    pub space: Space,
+    pub pose_in_space: Posef,
+    pub scale: f32,
+}
+impl VirtualKeyboardLocationInfoMETA {
+    pub const TYPE: StructureType = StructureType::VIRTUAL_KEYBOARD_LOCATION_INFO_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrVirtualKeyboardModelVisibilitySetInfoMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardModelVisibilitySetInfoMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct VirtualKeyboardModelVisibilitySetInfoMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub visible: Bool32,
+}
+impl VirtualKeyboardModelVisibilitySetInfoMETA {
+    pub const TYPE: StructureType = StructureType::VIRTUAL_KEYBOARD_MODEL_VISIBILITY_SET_INFO_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrVirtualKeyboardAnimationStateMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardAnimationStateMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct VirtualKeyboardAnimationStateMETA {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub animation_index: i32,
+    pub fraction: f32,
+}
+impl VirtualKeyboardAnimationStateMETA {
+    pub const TYPE: StructureType = StructureType::VIRTUAL_KEYBOARD_ANIMATION_STATE_META;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrVirtualKeyboardModelAnimationStatesMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardModelAnimationStatesMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct VirtualKeyboardModelAnimationStatesMETA {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub state_capacity_input: u32,
+    pub state_count_output: u32,
+    pub states: *mut VirtualKeyboardAnimationStateMETA,
+}
+impl VirtualKeyboardModelAnimationStatesMETA {
+    pub const TYPE: StructureType = StructureType::VIRTUAL_KEYBOARD_MODEL_ANIMATION_STATES_META;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrVirtualKeyboardTextureDataMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardTextureDataMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct VirtualKeyboardTextureDataMETA {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub texture_width: u32,
+    pub texture_height: u32,
+    pub buffer_capacity_input: u32,
+    pub buffer_count_output: u32,
+    pub buffer: *mut u8,
+}
+impl VirtualKeyboardTextureDataMETA {
+    pub const TYPE: StructureType = StructureType::VIRTUAL_KEYBOARD_TEXTURE_DATA_META;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrVirtualKeyboardInputInfoMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardInputInfoMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct VirtualKeyboardInputInfoMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub input_source: VirtualKeyboardInputSourceMETA,
+    pub input_space: Space,
+    pub input_pose_in_space: Posef,
+    pub input_state: VirtualKeyboardInputStateFlagsMETA,
+}
+impl VirtualKeyboardInputInfoMETA {
+    pub const TYPE: StructureType = StructureType::VIRTUAL_KEYBOARD_INPUT_INFO_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrVirtualKeyboardTextContextChangeInfoMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrVirtualKeyboardTextContextChangeInfoMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct VirtualKeyboardTextContextChangeInfoMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub text_context: *const c_char,
+}
+impl VirtualKeyboardTextContextChangeInfoMETA {
+    pub const TYPE: StructureType = StructureType::VIRTUAL_KEYBOARD_TEXT_CONTEXT_CHANGE_INFO_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrEventDataVirtualKeyboardCommitTextMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrEventDataVirtualKeyboardCommitTextMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct EventDataVirtualKeyboardCommitTextMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub keyboard: VirtualKeyboardMETA,
+    pub text: [c_char; MAX_VIRTUAL_KEYBOARD_COMMIT_TEXT_SIZE_META],
+}
+impl EventDataVirtualKeyboardCommitTextMETA {
+    pub const TYPE: StructureType = StructureType::EVENT_DATA_VIRTUAL_KEYBOARD_COMMIT_TEXT_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrEventDataVirtualKeyboardBackspaceMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrEventDataVirtualKeyboardBackspaceMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct EventDataVirtualKeyboardBackspaceMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub keyboard: VirtualKeyboardMETA,
+}
+impl EventDataVirtualKeyboardBackspaceMETA {
+    pub const TYPE: StructureType = StructureType::EVENT_DATA_VIRTUAL_KEYBOARD_BACKSPACE_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrEventDataVirtualKeyboardEnterMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrEventDataVirtualKeyboardEnterMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct EventDataVirtualKeyboardEnterMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub keyboard: VirtualKeyboardMETA,
+}
+impl EventDataVirtualKeyboardEnterMETA {
+    pub const TYPE: StructureType = StructureType::EVENT_DATA_VIRTUAL_KEYBOARD_ENTER_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrEventDataVirtualKeyboardShownMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrEventDataVirtualKeyboardShownMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct EventDataVirtualKeyboardShownMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub keyboard: VirtualKeyboardMETA,
+}
+impl EventDataVirtualKeyboardShownMETA {
+    pub const TYPE: StructureType = StructureType::EVENT_DATA_VIRTUAL_KEYBOARD_SHOWN_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+#[doc = "See [XrEventDataVirtualKeyboardHiddenMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrEventDataVirtualKeyboardHiddenMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+pub struct EventDataVirtualKeyboardHiddenMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub keyboard: VirtualKeyboardMETA,
+}
+impl EventDataVirtualKeyboardHiddenMETA {
+    pub const TYPE: StructureType = StructureType::EVENT_DATA_VIRTUAL_KEYBOARD_HIDDEN_META;
 }
 type GraphicsBindingVulkan2KHR = GraphicsBindingVulkanKHR;
 type SwapchainImageVulkan2KHR = SwapchainImageVulkanKHR;
@@ -9634,6 +10558,20 @@ pub mod pfn {
         camera_count_output: *mut u32,
         cameras: *mut ExternalCameraOCULUS,
     ) -> Result;
+    #[doc = "See [xrCreatePassthroughColorLutMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrCreatePassthroughColorLutMETA) - defined by [XR_META_passthrough_color_lut](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_passthrough_color_lut)"]
+    pub type CreatePassthroughColorLutMETA = unsafe extern "system" fn(
+        passthrough: PassthroughFB,
+        create_info: *const PassthroughColorLutCreateInfoMETA,
+        color_lut: *mut PassthroughColorLutMETA,
+    ) -> Result;
+    #[doc = "See [xrDestroyPassthroughColorLutMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrDestroyPassthroughColorLutMETA) - defined by [XR_META_passthrough_color_lut](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_passthrough_color_lut)"]
+    pub type DestroyPassthroughColorLutMETA =
+        unsafe extern "system" fn(color_lut: PassthroughColorLutMETA) -> Result;
+    #[doc = "See [xrUpdatePassthroughColorLutMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrUpdatePassthroughColorLutMETA) - defined by [XR_META_passthrough_color_lut](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_passthrough_color_lut)"]
+    pub type UpdatePassthroughColorLutMETA = unsafe extern "system" fn(
+        color_lut: PassthroughColorLutMETA,
+        update_info: *const PassthroughColorLutUpdateInfoMETA,
+    ) -> Result;
     #[doc = "See [xrEnumeratePerformanceMetricsCounterPathsMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrEnumeratePerformanceMetricsCounterPathsMETA) - defined by [XR_META_performance_metrics](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_performance_metrics)"]
     pub type EnumeratePerformanceMetricsCounterPathsMETA = unsafe extern "system" fn(
         instance: Instance,
@@ -9656,6 +10594,11 @@ pub mod pfn {
         session: Session,
         counter_path: Path,
         counter: *mut PerformanceMetricsCounterMETA,
+    ) -> Result;
+    #[doc = "See [xrGetPassthroughPreferencesMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetPassthroughPreferencesMETA) - defined by [XR_META_passthrough_preferences](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_passthrough_preferences)"]
+    pub type GetPassthroughPreferencesMETA = unsafe extern "system" fn(
+        session: Session,
+        preferences: *mut PassthroughPreferencesMETA,
     ) -> Result;
     #[doc = "See [xrApplyFoveationHTC](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrApplyFoveationHTC) - defined by [XR_HTC_foveation](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_HTC_foveation)"]
     pub type ApplyFoveationHTC = unsafe extern "system" fn(
@@ -9695,6 +10638,96 @@ pub mod pfn {
     pub type ApplyForceFeedbackCurlMNDX = unsafe extern "system" fn(
         hand_tracker: HandTrackerEXT,
         locations: *const ForceFeedbackCurlApplyLocationsMNDX,
+    ) -> Result;
+    #[doc = "See [xrCreatePlaneDetectorEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrCreatePlaneDetectorEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+    pub type CreatePlaneDetectorEXT = unsafe extern "system" fn(
+        session: Session,
+        create_info: *const PlaneDetectorCreateInfoEXT,
+        plane_detector: *mut PlaneDetectorEXT,
+    ) -> Result;
+    #[doc = "See [xrDestroyPlaneDetectorEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrDestroyPlaneDetectorEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+    pub type DestroyPlaneDetectorEXT =
+        unsafe extern "system" fn(plane_detector: PlaneDetectorEXT) -> Result;
+    #[doc = "See [xrBeginPlaneDetectionEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrBeginPlaneDetectionEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+    pub type BeginPlaneDetectionEXT = unsafe extern "system" fn(
+        plane_detector: PlaneDetectorEXT,
+        begin_info: *const PlaneDetectorBeginInfoEXT,
+    ) -> Result;
+    #[doc = "See [xrGetPlaneDetectionStateEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetPlaneDetectionStateEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+    pub type GetPlaneDetectionStateEXT = unsafe extern "system" fn(
+        plane_detector: PlaneDetectorEXT,
+        state: *mut PlaneDetectionStateEXT,
+    ) -> Result;
+    #[doc = "See [xrGetPlaneDetectionsEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetPlaneDetectionsEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+    pub type GetPlaneDetectionsEXT = unsafe extern "system" fn(
+        plane_detector: PlaneDetectorEXT,
+        info: *const PlaneDetectorGetInfoEXT,
+        locations: *mut PlaneDetectorLocationsEXT,
+    ) -> Result;
+    #[doc = "See [xrGetPlanePolygonBufferEXT](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetPlanePolygonBufferEXT) - defined by [XR_EXT_plane_detection](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_plane_detection)"]
+    pub type GetPlanePolygonBufferEXT = unsafe extern "system" fn(
+        plane_detector: PlaneDetectorEXT,
+        plane_id: u64,
+        polygon_buffer_index: u32,
+        polygon_buffer: *mut PlaneDetectorPolygonBufferEXT,
+    ) -> Result;
+    #[doc = "See [xrCreateVirtualKeyboardMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrCreateVirtualKeyboardMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+    pub type CreateVirtualKeyboardMETA = unsafe extern "system" fn(
+        session: Session,
+        create_info: *const VirtualKeyboardCreateInfoMETA,
+        keyboard: *mut VirtualKeyboardMETA,
+    ) -> Result;
+    #[doc = "See [xrDestroyVirtualKeyboardMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrDestroyVirtualKeyboardMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+    pub type DestroyVirtualKeyboardMETA =
+        unsafe extern "system" fn(keyboard: VirtualKeyboardMETA) -> Result;
+    #[doc = "See [xrCreateVirtualKeyboardSpaceMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrCreateVirtualKeyboardSpaceMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+    pub type CreateVirtualKeyboardSpaceMETA = unsafe extern "system" fn(
+        session: Session,
+        keyboard: VirtualKeyboardMETA,
+        create_info: *const VirtualKeyboardSpaceCreateInfoMETA,
+        keyboard_space: *mut Space,
+    ) -> Result;
+    #[doc = "See [xrSuggestVirtualKeyboardLocationMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrSuggestVirtualKeyboardLocationMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+    pub type SuggestVirtualKeyboardLocationMETA = unsafe extern "system" fn(
+        keyboard: VirtualKeyboardMETA,
+        location_info: *const VirtualKeyboardLocationInfoMETA,
+    ) -> Result;
+    #[doc = "See [xrGetVirtualKeyboardScaleMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetVirtualKeyboardScaleMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+    pub type GetVirtualKeyboardScaleMETA =
+        unsafe extern "system" fn(keyboard: VirtualKeyboardMETA, scale: *mut f32) -> Result;
+    #[doc = "See [xrSetVirtualKeyboardModelVisibilityMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrSetVirtualKeyboardModelVisibilityMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+    pub type SetVirtualKeyboardModelVisibilityMETA = unsafe extern "system" fn(
+        keyboard: VirtualKeyboardMETA,
+        model_visibility: *const VirtualKeyboardModelVisibilitySetInfoMETA,
+    ) -> Result;
+    #[doc = "See [xrGetVirtualKeyboardModelAnimationStatesMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetVirtualKeyboardModelAnimationStatesMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+    pub type GetVirtualKeyboardModelAnimationStatesMETA = unsafe extern "system" fn(
+        keyboard: VirtualKeyboardMETA,
+        animation_states: *mut VirtualKeyboardModelAnimationStatesMETA,
+    ) -> Result;
+    #[doc = "See [xrGetVirtualKeyboardDirtyTexturesMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetVirtualKeyboardDirtyTexturesMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+    pub type GetVirtualKeyboardDirtyTexturesMETA = unsafe extern "system" fn(
+        keyboard: VirtualKeyboardMETA,
+        texture_id_capacity_input: u32,
+        texture_id_count_output: *mut u32,
+        texture_ids: *mut u64,
+    ) -> Result;
+    #[doc = "See [xrGetVirtualKeyboardTextureDataMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetVirtualKeyboardTextureDataMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+    pub type GetVirtualKeyboardTextureDataMETA = unsafe extern "system" fn(
+        keyboard: VirtualKeyboardMETA,
+        texture_id: u64,
+        texture_data: *mut VirtualKeyboardTextureDataMETA,
+    ) -> Result;
+    #[doc = "See [xrSendVirtualKeyboardInputMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrSendVirtualKeyboardInputMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+    pub type SendVirtualKeyboardInputMETA = unsafe extern "system" fn(
+        keyboard: VirtualKeyboardMETA,
+        info: *const VirtualKeyboardInputInfoMETA,
+        interactor_root_pose: *mut Posef,
+    ) -> Result;
+    #[doc = "See [xrChangeVirtualKeyboardTextContextMETA](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrChangeVirtualKeyboardTextContextMETA) - defined by [XR_META_virtual_keyboard](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_META_virtual_keyboard)"]
+    pub type ChangeVirtualKeyboardTextContextMETA = unsafe extern "system" fn(
+        keyboard: VirtualKeyboardMETA,
+        change_info: *const VirtualKeyboardTextContextChangeInfoMETA,
     ) -> Result;
     #[doc = "See [xrGetVulkanGraphicsRequirements2KHR](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetVulkanGraphicsRequirements2KHR) - defined by [XR_KHR_vulkan_enable](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_KHR_vulkan_enable)"]
     pub type GetVulkanGraphicsRequirements2KHR = unsafe extern "system" fn(
@@ -9744,11 +10777,18 @@ pub const EXT_palm_pose_SPEC_VERSION: u32 = 2u32;
 pub const EXT_PALM_POSE_EXTENSION_NAME: &[u8] = b"XR_EXT_palm_pose\0";
 pub const EXT_uuid_SPEC_VERSION: u32 = 1u32;
 pub const EXT_UUID_EXTENSION_NAME: &[u8] = b"XR_EXT_uuid\0";
+pub const EXT_hand_interaction_SPEC_VERSION: u32 = 1u32;
+pub const EXT_HAND_INTERACTION_EXTENSION_NAME: &[u8] = b"XR_EXT_hand_interaction\0";
 pub const EXT_active_action_set_priority_SPEC_VERSION: u32 = 1u32;
 pub const EXT_ACTIVE_ACTION_SET_PRIORITY_EXTENSION_NAME: &[u8] =
     b"XR_EXT_active_action_set_priority\0";
 pub const EXT_local_floor_SPEC_VERSION: u32 = 1u32;
 pub const EXT_LOCAL_FLOOR_EXTENSION_NAME: &[u8] = b"XR_EXT_local_floor\0";
+pub const EXT_hand_tracking_data_source_SPEC_VERSION: u32 = 1u32;
+pub const EXT_HAND_TRACKING_DATA_SOURCE_EXTENSION_NAME: &[u8] =
+    b"XR_EXT_hand_tracking_data_source\0";
+pub const EXT_plane_detection_SPEC_VERSION: u32 = 1u32;
+pub const EXT_PLANE_DETECTION_EXTENSION_NAME: &[u8] = b"XR_EXT_plane_detection\0";
 pub const FB_composition_layer_image_layout_SPEC_VERSION: u32 = 1u32;
 pub const FB_COMPOSITION_LAYER_IMAGE_LAYOUT_EXTENSION_NAME: &[u8] =
     b"XR_FB_composition_layer_image_layout\0";
@@ -9789,7 +10829,7 @@ pub const FB_triangle_mesh_SPEC_VERSION: u32 = 2u32;
 pub const FB_TRIANGLE_MESH_EXTENSION_NAME: &[u8] = b"XR_FB_triangle_mesh\0";
 pub const FB_passthrough_SPEC_VERSION: u32 = 3u32;
 pub const FB_PASSTHROUGH_EXTENSION_NAME: &[u8] = b"XR_FB_passthrough\0";
-pub const FB_render_model_SPEC_VERSION: u32 = 3u32;
+pub const FB_render_model_SPEC_VERSION: u32 = 4u32;
 pub const FB_RENDER_MODEL_EXTENSION_NAME: &[u8] = b"XR_FB_render_model\0";
 pub const FB_spatial_entity_query_SPEC_VERSION: u32 = 1u32;
 pub const FB_SPATIAL_ENTITY_QUERY_EXTENSION_NAME: &[u8] = b"XR_FB_spatial_entity_query\0";
@@ -9816,7 +10856,7 @@ pub const FB_space_warp_SPEC_VERSION: u32 = 2u32;
 pub const FB_SPACE_WARP_EXTENSION_NAME: &[u8] = b"XR_FB_space_warp\0";
 pub const FB_haptic_amplitude_envelope_SPEC_VERSION: u32 = 1u32;
 pub const FB_HAPTIC_AMPLITUDE_ENVELOPE_EXTENSION_NAME: &[u8] = b"XR_FB_haptic_amplitude_envelope\0";
-pub const FB_scene_SPEC_VERSION: u32 = 1u32;
+pub const FB_scene_SPEC_VERSION: u32 = 3u32;
 pub const FB_SCENE_EXTENSION_NAME: &[u8] = b"XR_FB_scene\0";
 pub const FB_scene_capture_SPEC_VERSION: u32 = 1u32;
 pub const FB_SCENE_CAPTURE_EXTENSION_NAME: &[u8] = b"XR_FB_scene_capture\0";
@@ -9937,6 +10977,10 @@ pub const META_foveation_eye_tracked_SPEC_VERSION: u32 = 1u32;
 pub const META_FOVEATION_EYE_TRACKED_EXTENSION_NAME: &[u8] = b"XR_META_foveation_eye_tracked\0";
 pub const META_local_dimming_SPEC_VERSION: u32 = 1u32;
 pub const META_LOCAL_DIMMING_EXTENSION_NAME: &[u8] = b"XR_META_local_dimming\0";
+pub const META_passthrough_preferences_SPEC_VERSION: u32 = 1u32;
+pub const META_PASSTHROUGH_PREFERENCES_EXTENSION_NAME: &[u8] = b"XR_META_passthrough_preferences\0";
+pub const META_virtual_keyboard_SPEC_VERSION: u32 = 1u32;
+pub const META_VIRTUAL_KEYBOARD_EXTENSION_NAME: &[u8] = b"XR_META_virtual_keyboard\0";
 pub const META_vulkan_swapchain_create_info_SPEC_VERSION: u32 = 1u32;
 pub const META_VULKAN_SWAPCHAIN_CREATE_INFO_EXTENSION_NAME: &[u8] =
     b"XR_META_vulkan_swapchain_create_info\0";
@@ -9944,6 +10988,8 @@ pub const META_performance_metrics_SPEC_VERSION: u32 = 2u32;
 pub const META_PERFORMANCE_METRICS_EXTENSION_NAME: &[u8] = b"XR_META_performance_metrics\0";
 pub const META_headset_id_SPEC_VERSION: u32 = 1u32;
 pub const META_HEADSET_ID_EXTENSION_NAME: &[u8] = b"XR_META_headset_id\0";
+pub const META_passthrough_color_lut_SPEC_VERSION: u32 = 1u32;
+pub const META_PASSTHROUGH_COLOR_LUT_EXTENSION_NAME: &[u8] = b"XR_META_passthrough_color_lut\0";
 pub const ML_ml2_controller_interaction_SPEC_VERSION: u32 = 1u32;
 pub const ML_ML2_CONTROLLER_INTERACTION_EXTENSION_NAME: &[u8] =
     b"XR_ML_ml2_controller_interaction\0";
@@ -10006,6 +11052,8 @@ pub const OCULUS_audio_device_guid_SPEC_VERSION: u32 = 1u32;
 pub const OCULUS_AUDIO_DEVICE_GUID_EXTENSION_NAME: &[u8] = b"XR_OCULUS_audio_device_guid\0";
 pub const OCULUS_external_camera_SPEC_VERSION: u32 = 1u32;
 pub const OCULUS_EXTERNAL_CAMERA_EXTENSION_NAME: &[u8] = b"XR_OCULUS_external_camera\0";
+pub const OPPO_controller_interaction_SPEC_VERSION: u32 = 1u32;
+pub const OPPO_CONTROLLER_INTERACTION_EXTENSION_NAME: &[u8] = b"XR_OPPO_controller_interaction\0";
 pub const QCOM_tracking_optimization_settings_SPEC_VERSION: u32 = 1u32;
 pub const QCOM_TRACKING_OPTIMIZATION_SETTINGS_EXTENSION_NAME: &[u8] =
     b"XR_QCOM_tracking_optimization_settings\0";
@@ -10034,7 +11082,7 @@ pub const MNDX_egl_enable_SPEC_VERSION: u32 = 1u32;
 pub const MNDX_EGL_ENABLE_EXTENSION_NAME: &[u8] = b"XR_MNDX_egl_enable\0";
 pub const MNDX_force_feedback_curl_SPEC_VERSION: u32 = 1u32;
 pub const MNDX_FORCE_FEEDBACK_CURL_EXTENSION_NAME: &[u8] = b"XR_MNDX_force_feedback_curl\0";
-pub const HTCX_vive_tracker_interaction_SPEC_VERSION: u32 = 2u32;
+pub const HTCX_vive_tracker_interaction_SPEC_VERSION: u32 = 3u32;
 pub const HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME: &[u8] =
     b"XR_HTCX_vive_tracker_interaction\0";
 #[cfg(feature = "linked")]

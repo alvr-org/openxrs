@@ -13,7 +13,7 @@ pub use sys::{
     CompositionLayerSecureContentFlagsFB, CompositionLayerSettingsFlagsFB,
     CompositionLayerSpaceWarpInfoFlagsFB, DebugUtilsMessageSeverityFlagsEXT,
     DebugUtilsMessageTypeFlagsEXT, DigitalLensControlFlagsALMALENCE, EnvironmentBlendMode,
-    Extent2Df, Extent2Di, Extent3DfFB, ExternalCameraAttachedToDeviceOCULUS,
+    Extent2Df, Extent2Di, Extent3DfEXT, Extent3DfFB, ExternalCameraAttachedToDeviceOCULUS,
     ExternalCameraExtrinsicsOCULUS, ExternalCameraIntrinsicsOCULUS,
     ExternalCameraStatusFlagsOCULUS, EyeExpressionHTC, EyePositionFB, EyeVisibility,
     FaceConfidenceFB, FaceExpressionFB, FaceExpressionSetFB, FacialTrackingTypeHTC,
@@ -23,23 +23,28 @@ pub use sys::{
     FoveationLevelHTC, FoveationModeHTC, Fovf, FrameEndInfoFlagsML,
     GlobalDimmerFrameEndInfoFlagsML, HandEXT, HandForearmJointULTRALEAP, HandJointEXT,
     HandJointLocationEXT, HandJointSetEXT, HandJointVelocityEXT, HandJointsMotionRangeEXT,
-    HandMeshVertexMSFT, HandPoseTypeMSFT, HandTrackingAimFlagsFB, InputSourceLocalizedNameFlags,
-    InstanceCreateFlags, KeyboardTrackingFlagsFB, KeyboardTrackingQueryFlagsFB, LipExpressionHTC,
-    LocalDimmingModeMETA, MeshComputeLodMSFT, ObjectType, Offset2Df, Offset2Di, Offset3DfFB,
-    OverlayMainSessionFlagsEXTX, OverlaySessionCreateFlagsEXTX, PassthroughCapabilityFlagsFB,
+    HandMeshVertexMSFT, HandPoseTypeMSFT, HandTrackingAimFlagsFB, HandTrackingDataSourceEXT,
+    InputSourceLocalizedNameFlags, InstanceCreateFlags, KeyboardTrackingFlagsFB,
+    KeyboardTrackingQueryFlagsFB, LipExpressionHTC, LocalDimmingModeMETA, MeshComputeLodMSFT,
+    ObjectType, Offset2Df, Offset2Di, Offset3DfFB, OverlayMainSessionFlagsEXTX,
+    OverlaySessionCreateFlagsEXTX, PassthroughCapabilityFlagsFB, PassthroughColorLutChannelsMETA,
     PassthroughFlagsFB, PassthroughFormHTC, PassthroughLayerPurposeFB,
-    PassthroughStateChangedFlagsFB, PerfSettingsDomainEXT, PerfSettingsLevelEXT,
-    PerfSettingsNotificationLevelEXT, PerfSettingsSubDomainEXT, PerformanceMetricsCounterFlagsMETA,
-    PerformanceMetricsCounterUnitMETA, Posef, Quaternionf, Rect2Df, Rect2Di, Rect3DfFB,
-    ReferenceSpaceType, RenderModelFlagsFB, ReprojectionModeMSFT, SceneComponentTypeMSFT,
-    SceneComputeConsistencyMSFT, SceneComputeFeatureMSFT, SceneComputeStateMSFT,
-    SceneObjectTypeMSFT, ScenePlaneAlignmentTypeMSFT, SessionCreateFlags, SessionState,
-    SpaceComponentTypeFB, SpaceLocationFlags, SpacePersistenceModeFB, SpaceQueryActionFB,
-    SpaceStorageLocationFB, SpaceVelocityFlags, SpatialGraphNodeTypeMSFT, StructureType,
-    SwapchainCreateFlags, SwapchainCreateFoveationFlagsFB, SwapchainStateFoveationFlagsFB,
-    SwapchainUsageFlags, SystemGraphicsProperties, TrackingOptimizationSettingsDomainQCOM,
+    PassthroughPreferenceFlagsMETA, PassthroughStateChangedFlagsFB, PerfSettingsDomainEXT,
+    PerfSettingsLevelEXT, PerfSettingsNotificationLevelEXT, PerfSettingsSubDomainEXT,
+    PerformanceMetricsCounterFlagsMETA, PerformanceMetricsCounterUnitMETA,
+    PlaneDetectionCapabilityFlagsEXT, PlaneDetectionStateEXT, PlaneDetectorFlagsEXT,
+    PlaneDetectorOrientationEXT, PlaneDetectorSemanticTypeEXT, Posef, Quaternionf, Rect2Df,
+    Rect2Di, Rect3DfFB, ReferenceSpaceType, RenderModelFlagsFB, ReprojectionModeMSFT,
+    SceneComponentTypeMSFT, SceneComputeConsistencyMSFT, SceneComputeFeatureMSFT,
+    SceneComputeStateMSFT, SceneObjectTypeMSFT, ScenePlaneAlignmentTypeMSFT,
+    SemanticLabelsSupportFlagsFB, SessionCreateFlags, SessionState, SpaceComponentTypeFB,
+    SpaceLocationFlags, SpacePersistenceModeFB, SpaceQueryActionFB, SpaceStorageLocationFB,
+    SpaceVelocityFlags, SpatialGraphNodeTypeMSFT, StructureType, SwapchainCreateFlags,
+    SwapchainCreateFoveationFlagsFB, SwapchainStateFoveationFlagsFB, SwapchainUsageFlags,
+    SystemGraphicsProperties, TrackingOptimizationSettingsDomainQCOM,
     TrackingOptimizationSettingsHintQCOM, TriangleMeshFlagsFB, Vector2f, Vector3f, Vector4f,
-    Vector4sFB, ViewConfigurationType, ViewStateFlags, VisibilityMaskTypeKHR,
+    Vector4sFB, ViewConfigurationType, ViewStateFlags, VirtualKeyboardInputSourceMETA,
+    VirtualKeyboardInputStateFlagsMETA, VirtualKeyboardLocationTypeMETA, VisibilityMaskTypeKHR,
     VulkanDeviceCreateFlagsKHR, VulkanInstanceCreateFlagsKHR, WindingOrderFB,
 };
 #[doc = r" A subset of known extensions"]
@@ -64,8 +69,11 @@ pub struct ExtensionSet {
     pub ext_hp_mixed_reality_controller: bool,
     pub ext_palm_pose: bool,
     pub ext_uuid: bool,
+    pub ext_hand_interaction: bool,
     pub ext_active_action_set_priority: bool,
     pub ext_local_floor: bool,
+    pub ext_hand_tracking_data_source: bool,
+    pub ext_plane_detection: bool,
     pub fb_composition_layer_image_layout: bool,
     pub fb_composition_layer_alpha_blend: bool,
     #[cfg(target_os = "android")]
@@ -148,9 +156,12 @@ pub struct ExtensionSet {
     pub khr_swapchain_usage_input_attachment_bit: bool,
     pub meta_foveation_eye_tracked: bool,
     pub meta_local_dimming: bool,
+    pub meta_passthrough_preferences: bool,
+    pub meta_virtual_keyboard: bool,
     pub meta_vulkan_swapchain_create_info: bool,
     pub meta_performance_metrics: bool,
     pub meta_headset_id: bool,
+    pub meta_passthrough_color_lut: bool,
     pub ml_ml2_controller_interaction: bool,
     pub ml_frame_end_info: bool,
     pub ml_global_dimmer: bool,
@@ -175,6 +186,7 @@ pub struct ExtensionSet {
     pub oculus_android_session_state_enable: bool,
     pub oculus_audio_device_guid: bool,
     pub oculus_external_camera: bool,
+    pub oppo_controller_interaction: bool,
     pub qcom_tracking_optimization_settings: bool,
     pub ultraleap_hand_tracking_forearm: bool,
     pub valve_analog_threshold: bool,
@@ -248,11 +260,20 @@ impl ExtensionSet {
                 raw::UuidEXT::NAME => {
                     out.ext_uuid = true;
                 }
+                raw::HandInteractionEXT::NAME => {
+                    out.ext_hand_interaction = true;
+                }
                 raw::ActiveActionSetPriorityEXT::NAME => {
                     out.ext_active_action_set_priority = true;
                 }
                 raw::LocalFloorEXT::NAME => {
                     out.ext_local_floor = true;
+                }
+                raw::HandTrackingDataSourceEXT::NAME => {
+                    out.ext_hand_tracking_data_source = true;
+                }
+                raw::PlaneDetectionEXT::NAME => {
+                    out.ext_plane_detection = true;
                 }
                 raw::CompositionLayerImageLayoutFB::NAME => {
                     out.fb_composition_layer_image_layout = true;
@@ -482,6 +503,12 @@ impl ExtensionSet {
                 raw::LocalDimmingMETA::NAME => {
                     out.meta_local_dimming = true;
                 }
+                raw::PassthroughPreferencesMETA::NAME => {
+                    out.meta_passthrough_preferences = true;
+                }
+                raw::VirtualKeyboardMETA::NAME => {
+                    out.meta_virtual_keyboard = true;
+                }
                 raw::VulkanSwapchainCreateInfoMETA::NAME => {
                     out.meta_vulkan_swapchain_create_info = true;
                 }
@@ -490,6 +517,9 @@ impl ExtensionSet {
                 }
                 raw::HeadsetIdMETA::NAME => {
                     out.meta_headset_id = true;
+                }
+                raw::PassthroughColorLutMETA::NAME => {
+                    out.meta_passthrough_color_lut = true;
                 }
                 raw::Ml2ControllerInteractionML::NAME => {
                     out.ml_ml2_controller_interaction = true;
@@ -556,6 +586,9 @@ impl ExtensionSet {
                 }
                 raw::ExternalCameraOCULUS::NAME => {
                     out.oculus_external_camera = true;
+                }
+                raw::ControllerInteractionOPPO::NAME => {
+                    out.oppo_controller_interaction = true;
                 }
                 raw::TrackingOptimizationSettingsQCOM::NAME => {
                     out.qcom_tracking_optimization_settings = true;
@@ -694,6 +727,11 @@ impl ExtensionSet {
             }
         }
         {
+            if self.ext_hand_interaction {
+                out.push(raw::HandInteractionEXT::NAME.into());
+            }
+        }
+        {
             if self.ext_active_action_set_priority {
                 out.push(raw::ActiveActionSetPriorityEXT::NAME.into());
             }
@@ -701,6 +739,16 @@ impl ExtensionSet {
         {
             if self.ext_local_floor {
                 out.push(raw::LocalFloorEXT::NAME.into());
+            }
+        }
+        {
+            if self.ext_hand_tracking_data_source {
+                out.push(raw::HandTrackingDataSourceEXT::NAME.into());
+            }
+        }
+        {
+            if self.ext_plane_detection {
+                out.push(raw::PlaneDetectionEXT::NAME.into());
             }
         }
         {
@@ -1078,6 +1126,16 @@ impl ExtensionSet {
             }
         }
         {
+            if self.meta_passthrough_preferences {
+                out.push(raw::PassthroughPreferencesMETA::NAME.into());
+            }
+        }
+        {
+            if self.meta_virtual_keyboard {
+                out.push(raw::VirtualKeyboardMETA::NAME.into());
+            }
+        }
+        {
             if self.meta_vulkan_swapchain_create_info {
                 out.push(raw::VulkanSwapchainCreateInfoMETA::NAME.into());
             }
@@ -1090,6 +1148,11 @@ impl ExtensionSet {
         {
             if self.meta_headset_id {
                 out.push(raw::HeadsetIdMETA::NAME.into());
+            }
+        }
+        {
+            if self.meta_passthrough_color_lut {
+                out.push(raw::PassthroughColorLutMETA::NAME.into());
             }
         }
         {
@@ -1201,6 +1264,11 @@ impl ExtensionSet {
             }
         }
         {
+            if self.oppo_controller_interaction {
+                out.push(raw::ControllerInteractionOPPO::NAME.into());
+            }
+        }
+        {
             if self.qcom_tracking_optimization_settings {
                 out.push(raw::TrackingOptimizationSettingsQCOM::NAME.into());
             }
@@ -1295,8 +1363,11 @@ pub struct InstanceExtensions {
     pub ext_hp_mixed_reality_controller: Option<raw::HpMixedRealityControllerEXT>,
     pub ext_palm_pose: Option<raw::PalmPoseEXT>,
     pub ext_uuid: Option<raw::UuidEXT>,
+    pub ext_hand_interaction: Option<raw::HandInteractionEXT>,
     pub ext_active_action_set_priority: Option<raw::ActiveActionSetPriorityEXT>,
     pub ext_local_floor: Option<raw::LocalFloorEXT>,
+    pub ext_hand_tracking_data_source: Option<raw::HandTrackingDataSourceEXT>,
+    pub ext_plane_detection: Option<raw::PlaneDetectionEXT>,
     pub fb_composition_layer_image_layout: Option<raw::CompositionLayerImageLayoutFB>,
     pub fb_composition_layer_alpha_blend: Option<raw::CompositionLayerAlphaBlendFB>,
     #[cfg(target_os = "android")]
@@ -1381,9 +1452,12 @@ pub struct InstanceExtensions {
     pub khr_swapchain_usage_input_attachment_bit: Option<raw::SwapchainUsageInputAttachmentBitKHR>,
     pub meta_foveation_eye_tracked: Option<raw::FoveationEyeTrackedMETA>,
     pub meta_local_dimming: Option<raw::LocalDimmingMETA>,
+    pub meta_passthrough_preferences: Option<raw::PassthroughPreferencesMETA>,
+    pub meta_virtual_keyboard: Option<raw::VirtualKeyboardMETA>,
     pub meta_vulkan_swapchain_create_info: Option<raw::VulkanSwapchainCreateInfoMETA>,
     pub meta_performance_metrics: Option<raw::PerformanceMetricsMETA>,
     pub meta_headset_id: Option<raw::HeadsetIdMETA>,
+    pub meta_passthrough_color_lut: Option<raw::PassthroughColorLutMETA>,
     pub ml_ml2_controller_interaction: Option<raw::Ml2ControllerInteractionML>,
     pub ml_frame_end_info: Option<raw::FrameEndInfoML>,
     pub ml_global_dimmer: Option<raw::GlobalDimmerML>,
@@ -1408,6 +1482,7 @@ pub struct InstanceExtensions {
     pub oculus_android_session_state_enable: Option<raw::AndroidSessionStateEnableOCULUS>,
     pub oculus_audio_device_guid: Option<raw::AudioDeviceGuidOCULUS>,
     pub oculus_external_camera: Option<raw::ExternalCameraOCULUS>,
+    pub oppo_controller_interaction: Option<raw::ControllerInteractionOPPO>,
     pub qcom_tracking_optimization_settings: Option<raw::TrackingOptimizationSettingsQCOM>,
     pub ultraleap_hand_tracking_forearm: Option<raw::HandTrackingForearmULTRALEAP>,
     pub valve_analog_threshold: Option<raw::AnalogThresholdVALVE>,
@@ -1520,6 +1595,11 @@ impl InstanceExtensions {
             } else {
                 None
             },
+            ext_hand_interaction: if required.ext_hand_interaction {
+                Some(raw::HandInteractionEXT {})
+            } else {
+                None
+            },
             ext_active_action_set_priority: if required.ext_active_action_set_priority {
                 Some(raw::ActiveActionSetPriorityEXT {})
             } else {
@@ -1527,6 +1607,16 @@ impl InstanceExtensions {
             },
             ext_local_floor: if required.ext_local_floor {
                 Some(raw::LocalFloorEXT {})
+            } else {
+                None
+            },
+            ext_hand_tracking_data_source: if required.ext_hand_tracking_data_source {
+                Some(raw::HandTrackingDataSourceEXT {})
+            } else {
+                None
+            },
+            ext_plane_detection: if required.ext_plane_detection {
+                Some(raw::PlaneDetectionEXT::load(entry, instance)?)
             } else {
                 None
             },
@@ -1918,6 +2008,16 @@ impl InstanceExtensions {
             } else {
                 None
             },
+            meta_passthrough_preferences: if required.meta_passthrough_preferences {
+                Some(raw::PassthroughPreferencesMETA::load(entry, instance)?)
+            } else {
+                None
+            },
+            meta_virtual_keyboard: if required.meta_virtual_keyboard {
+                Some(raw::VirtualKeyboardMETA::load(entry, instance)?)
+            } else {
+                None
+            },
             meta_vulkan_swapchain_create_info: if required.meta_vulkan_swapchain_create_info {
                 Some(raw::VulkanSwapchainCreateInfoMETA {})
             } else {
@@ -1930,6 +2030,11 @@ impl InstanceExtensions {
             },
             meta_headset_id: if required.meta_headset_id {
                 Some(raw::HeadsetIdMETA {})
+            } else {
+                None
+            },
+            meta_passthrough_color_lut: if required.meta_passthrough_color_lut {
+                Some(raw::PassthroughColorLutMETA::load(entry, instance)?)
             } else {
                 None
             },
@@ -2045,6 +2150,11 @@ impl InstanceExtensions {
             } else {
                 None
             },
+            oppo_controller_interaction: if required.oppo_controller_interaction {
+                Some(raw::ControllerInteractionOPPO {})
+            } else {
+                None
+            },
             qcom_tracking_optimization_settings: if required.qcom_tracking_optimization_settings {
                 Some(raw::TrackingOptimizationSettingsQCOM::load(
                     entry, instance,
@@ -2139,6 +2249,11 @@ pub enum Event<'a> {
     PassthroughStateChangedFB(PassthroughStateChangedFB<'a>),
     ViveTrackerConnectedHTCX(ViveTrackerConnectedHTCX<'a>),
     MarkerTrackingUpdateVARJO(MarkerTrackingUpdateVARJO<'a>),
+    VirtualKeyboardCommitTextMETA(VirtualKeyboardCommitTextMETA<'a>),
+    VirtualKeyboardBackspaceMETA(VirtualKeyboardBackspaceMETA<'a>),
+    VirtualKeyboardEnterMETA(VirtualKeyboardEnterMETA<'a>),
+    VirtualKeyboardShownMETA(VirtualKeyboardShownMETA<'a>),
+    VirtualKeyboardHiddenMETA(VirtualKeyboardHiddenMETA<'a>),
 }
 impl<'a> Event<'a> {
     #[doc = r" Decode an event"]
@@ -2237,6 +2352,26 @@ impl<'a> Event<'a> {
             sys::StructureType::EVENT_DATA_MARKER_TRACKING_UPDATE_VARJO => {
                 let typed = &*(raw as *const sys::EventDataMarkerTrackingUpdateVARJO);
                 Event::MarkerTrackingUpdateVARJO(MarkerTrackingUpdateVARJO::new(typed))
+            }
+            sys::StructureType::EVENT_DATA_VIRTUAL_KEYBOARD_COMMIT_TEXT_META => {
+                let typed = &*(raw as *const sys::EventDataVirtualKeyboardCommitTextMETA);
+                Event::VirtualKeyboardCommitTextMETA(VirtualKeyboardCommitTextMETA::new(typed))
+            }
+            sys::StructureType::EVENT_DATA_VIRTUAL_KEYBOARD_BACKSPACE_META => {
+                let typed = &*(raw as *const sys::EventDataVirtualKeyboardBackspaceMETA);
+                Event::VirtualKeyboardBackspaceMETA(VirtualKeyboardBackspaceMETA::new(typed))
+            }
+            sys::StructureType::EVENT_DATA_VIRTUAL_KEYBOARD_ENTER_META => {
+                let typed = &*(raw as *const sys::EventDataVirtualKeyboardEnterMETA);
+                Event::VirtualKeyboardEnterMETA(VirtualKeyboardEnterMETA::new(typed))
+            }
+            sys::StructureType::EVENT_DATA_VIRTUAL_KEYBOARD_SHOWN_META => {
+                let typed = &*(raw as *const sys::EventDataVirtualKeyboardShownMETA);
+                Event::VirtualKeyboardShownMETA(VirtualKeyboardShownMETA::new(typed))
+            }
+            sys::StructureType::EVENT_DATA_VIRTUAL_KEYBOARD_HIDDEN_META => {
+                let typed = &*(raw as *const sys::EventDataVirtualKeyboardHiddenMETA);
+                Event::VirtualKeyboardHiddenMETA(VirtualKeyboardHiddenMETA::new(typed))
             }
             _ => {
                 return None;
@@ -2722,6 +2857,90 @@ impl<'a> MarkerTrackingUpdateVARJO<'a> {
     #[inline]
     pub fn time(self) -> Time {
         (self.0).time
+    }
+}
+#[derive(Copy, Clone)]
+pub struct VirtualKeyboardCommitTextMETA<'a>(&'a sys::EventDataVirtualKeyboardCommitTextMETA);
+impl<'a> VirtualKeyboardCommitTextMETA<'a> {
+    #[inline]
+    #[doc = r" # Safety"]
+    #[doc = r" `inner` must be valid event data according to the OpenXR spec. Refer to"]
+    #[doc = "[sys::EventDataVirtualKeyboardCommitTextMETA]"]
+    #[doc = r" for more information."]
+    pub unsafe fn new(inner: &'a sys::EventDataVirtualKeyboardCommitTextMETA) -> Self {
+        Self(inner)
+    }
+    #[inline]
+    pub fn keyboard(self) -> sys::VirtualKeyboardMETA {
+        (self.0).keyboard
+    }
+    #[inline]
+    pub fn text(self) -> [c_char; MAX_VIRTUAL_KEYBOARD_COMMIT_TEXT_SIZE_META] {
+        (self.0).text
+    }
+}
+#[derive(Copy, Clone)]
+pub struct VirtualKeyboardBackspaceMETA<'a>(&'a sys::EventDataVirtualKeyboardBackspaceMETA);
+impl<'a> VirtualKeyboardBackspaceMETA<'a> {
+    #[inline]
+    #[doc = r" # Safety"]
+    #[doc = r" `inner` must be valid event data according to the OpenXR spec. Refer to"]
+    #[doc = "[sys::EventDataVirtualKeyboardBackspaceMETA]"]
+    #[doc = r" for more information."]
+    pub unsafe fn new(inner: &'a sys::EventDataVirtualKeyboardBackspaceMETA) -> Self {
+        Self(inner)
+    }
+    #[inline]
+    pub fn keyboard(self) -> sys::VirtualKeyboardMETA {
+        (self.0).keyboard
+    }
+}
+#[derive(Copy, Clone)]
+pub struct VirtualKeyboardEnterMETA<'a>(&'a sys::EventDataVirtualKeyboardEnterMETA);
+impl<'a> VirtualKeyboardEnterMETA<'a> {
+    #[inline]
+    #[doc = r" # Safety"]
+    #[doc = r" `inner` must be valid event data according to the OpenXR spec. Refer to"]
+    #[doc = "[sys::EventDataVirtualKeyboardEnterMETA]"]
+    #[doc = r" for more information."]
+    pub unsafe fn new(inner: &'a sys::EventDataVirtualKeyboardEnterMETA) -> Self {
+        Self(inner)
+    }
+    #[inline]
+    pub fn keyboard(self) -> sys::VirtualKeyboardMETA {
+        (self.0).keyboard
+    }
+}
+#[derive(Copy, Clone)]
+pub struct VirtualKeyboardShownMETA<'a>(&'a sys::EventDataVirtualKeyboardShownMETA);
+impl<'a> VirtualKeyboardShownMETA<'a> {
+    #[inline]
+    #[doc = r" # Safety"]
+    #[doc = r" `inner` must be valid event data according to the OpenXR spec. Refer to"]
+    #[doc = "[sys::EventDataVirtualKeyboardShownMETA]"]
+    #[doc = r" for more information."]
+    pub unsafe fn new(inner: &'a sys::EventDataVirtualKeyboardShownMETA) -> Self {
+        Self(inner)
+    }
+    #[inline]
+    pub fn keyboard(self) -> sys::VirtualKeyboardMETA {
+        (self.0).keyboard
+    }
+}
+#[derive(Copy, Clone)]
+pub struct VirtualKeyboardHiddenMETA<'a>(&'a sys::EventDataVirtualKeyboardHiddenMETA);
+impl<'a> VirtualKeyboardHiddenMETA<'a> {
+    #[inline]
+    #[doc = r" # Safety"]
+    #[doc = r" `inner` must be valid event data according to the OpenXR spec. Refer to"]
+    #[doc = "[sys::EventDataVirtualKeyboardHiddenMETA]"]
+    #[doc = r" for more information."]
+    pub unsafe fn new(inner: &'a sys::EventDataVirtualKeyboardHiddenMETA) -> Self {
+        Self(inner)
+    }
+    #[inline]
+    pub fn keyboard(self) -> sys::VirtualKeyboardMETA {
+        (self.0).keyboard
     }
 }
 pub mod raw {
@@ -3288,6 +3507,12 @@ pub mod raw {
         pub const NAME: &'static [u8] = sys::EXT_UUID_EXTENSION_NAME;
     }
     #[derive(Copy, Clone)]
+    pub struct HandInteractionEXT {}
+    impl HandInteractionEXT {
+        pub const VERSION: u32 = sys::EXT_hand_interaction_SPEC_VERSION;
+        pub const NAME: &'static [u8] = sys::EXT_HAND_INTERACTION_EXTENSION_NAME;
+    }
+    #[derive(Copy, Clone)]
     pub struct ActiveActionSetPriorityEXT {}
     impl ActiveActionSetPriorityEXT {
         pub const VERSION: u32 = sys::EXT_active_action_set_priority_SPEC_VERSION;
@@ -3298,6 +3523,58 @@ pub mod raw {
     impl LocalFloorEXT {
         pub const VERSION: u32 = sys::EXT_local_floor_SPEC_VERSION;
         pub const NAME: &'static [u8] = sys::EXT_LOCAL_FLOOR_EXTENSION_NAME;
+    }
+    #[derive(Copy, Clone)]
+    pub struct HandTrackingDataSourceEXT {}
+    impl HandTrackingDataSourceEXT {
+        pub const VERSION: u32 = sys::EXT_hand_tracking_data_source_SPEC_VERSION;
+        pub const NAME: &'static [u8] = sys::EXT_HAND_TRACKING_DATA_SOURCE_EXTENSION_NAME;
+    }
+    #[derive(Copy, Clone)]
+    pub struct PlaneDetectionEXT {
+        pub create_plane_detector: pfn::CreatePlaneDetectorEXT,
+        pub destroy_plane_detector: pfn::DestroyPlaneDetectorEXT,
+        pub begin_plane_detection: pfn::BeginPlaneDetectionEXT,
+        pub get_plane_detection_state: pfn::GetPlaneDetectionStateEXT,
+        pub get_plane_detections: pfn::GetPlaneDetectionsEXT,
+        pub get_plane_polygon_buffer: pfn::GetPlanePolygonBufferEXT,
+    }
+    impl PlaneDetectionEXT {
+        pub const VERSION: u32 = sys::EXT_plane_detection_SPEC_VERSION;
+        pub const NAME: &'static [u8] = sys::EXT_PLANE_DETECTION_EXTENSION_NAME;
+        #[doc = r" Load the extension's function pointer table"]
+        #[doc = r""]
+        #[doc = r" # Safety"]
+        #[doc = r""]
+        #[doc = r" `instance` must be a valid instance handle."]
+        pub unsafe fn load(entry: &Entry, instance: sys::Instance) -> Result<Self> {
+            Ok(Self {
+                create_plane_detector: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrCreatePlaneDetectorEXT\0"),
+                )?),
+                destroy_plane_detector: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrDestroyPlaneDetectorEXT\0"),
+                )?),
+                begin_plane_detection: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrBeginPlaneDetectionEXT\0"),
+                )?),
+                get_plane_detection_state: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrGetPlaneDetectionStateEXT\0"),
+                )?),
+                get_plane_detections: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrGetPlaneDetectionsEXT\0"),
+                )?),
+                get_plane_polygon_buffer: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrGetPlanePolygonBufferEXT\0"),
+                )?),
+            })
+        }
     }
     #[derive(Copy, Clone)]
     pub struct CompositionLayerImageLayoutFB {}
@@ -4649,6 +4926,111 @@ pub mod raw {
         pub const NAME: &'static [u8] = sys::META_LOCAL_DIMMING_EXTENSION_NAME;
     }
     #[derive(Copy, Clone)]
+    pub struct PassthroughPreferencesMETA {
+        pub get_passthrough_preferences: pfn::GetPassthroughPreferencesMETA,
+    }
+    impl PassthroughPreferencesMETA {
+        pub const VERSION: u32 = sys::META_passthrough_preferences_SPEC_VERSION;
+        pub const NAME: &'static [u8] = sys::META_PASSTHROUGH_PREFERENCES_EXTENSION_NAME;
+        #[doc = r" Load the extension's function pointer table"]
+        #[doc = r""]
+        #[doc = r" # Safety"]
+        #[doc = r""]
+        #[doc = r" `instance` must be a valid instance handle."]
+        pub unsafe fn load(entry: &Entry, instance: sys::Instance) -> Result<Self> {
+            Ok(Self {
+                get_passthrough_preferences: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrGetPassthroughPreferencesMETA\0"),
+                )?),
+            })
+        }
+    }
+    #[derive(Copy, Clone)]
+    pub struct VirtualKeyboardMETA {
+        pub create_virtual_keyboard: pfn::CreateVirtualKeyboardMETA,
+        pub destroy_virtual_keyboard: pfn::DestroyVirtualKeyboardMETA,
+        pub create_virtual_keyboard_space: pfn::CreateVirtualKeyboardSpaceMETA,
+        pub suggest_virtual_keyboard_location: pfn::SuggestVirtualKeyboardLocationMETA,
+        pub get_virtual_keyboard_scale: pfn::GetVirtualKeyboardScaleMETA,
+        pub set_virtual_keyboard_model_visibility: pfn::SetVirtualKeyboardModelVisibilityMETA,
+        pub get_virtual_keyboard_model_animation_states:
+            pfn::GetVirtualKeyboardModelAnimationStatesMETA,
+        pub get_virtual_keyboard_dirty_textures: pfn::GetVirtualKeyboardDirtyTexturesMETA,
+        pub get_virtual_keyboard_texture_data: pfn::GetVirtualKeyboardTextureDataMETA,
+        pub send_virtual_keyboard_input: pfn::SendVirtualKeyboardInputMETA,
+        pub change_virtual_keyboard_text_context: pfn::ChangeVirtualKeyboardTextContextMETA,
+    }
+    impl VirtualKeyboardMETA {
+        pub const VERSION: u32 = sys::META_virtual_keyboard_SPEC_VERSION;
+        pub const NAME: &'static [u8] = sys::META_VIRTUAL_KEYBOARD_EXTENSION_NAME;
+        #[doc = r" Load the extension's function pointer table"]
+        #[doc = r""]
+        #[doc = r" # Safety"]
+        #[doc = r""]
+        #[doc = r" `instance` must be a valid instance handle."]
+        pub unsafe fn load(entry: &Entry, instance: sys::Instance) -> Result<Self> {
+            Ok(Self {
+                create_virtual_keyboard: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrCreateVirtualKeyboardMETA\0"),
+                )?),
+                destroy_virtual_keyboard: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrDestroyVirtualKeyboardMETA\0"),
+                )?),
+                create_virtual_keyboard_space: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrCreateVirtualKeyboardSpaceMETA\0"),
+                )?),
+                suggest_virtual_keyboard_location: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrSuggestVirtualKeyboardLocationMETA\0"),
+                )?),
+                get_virtual_keyboard_scale: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrGetVirtualKeyboardScaleMETA\0"),
+                )?),
+                set_virtual_keyboard_model_visibility: mem::transmute(
+                    entry.get_instance_proc_addr(
+                        instance,
+                        CStr::from_bytes_with_nul_unchecked(
+                            b"xrSetVirtualKeyboardModelVisibilityMETA\0",
+                        ),
+                    )?,
+                ),
+                get_virtual_keyboard_model_animation_states: mem::transmute(
+                    entry.get_instance_proc_addr(
+                        instance,
+                        CStr::from_bytes_with_nul_unchecked(
+                            b"xrGetVirtualKeyboardModelAnimationStatesMETA\0",
+                        ),
+                    )?,
+                ),
+                get_virtual_keyboard_dirty_textures: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrGetVirtualKeyboardDirtyTexturesMETA\0"),
+                )?),
+                get_virtual_keyboard_texture_data: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrGetVirtualKeyboardTextureDataMETA\0"),
+                )?),
+                send_virtual_keyboard_input: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrSendVirtualKeyboardInputMETA\0"),
+                )?),
+                change_virtual_keyboard_text_context: mem::transmute(
+                    entry.get_instance_proc_addr(
+                        instance,
+                        CStr::from_bytes_with_nul_unchecked(
+                            b"xrChangeVirtualKeyboardTextContextMETA\0",
+                        ),
+                    )?,
+                ),
+            })
+        }
+    }
+    #[derive(Copy, Clone)]
     pub struct VulkanSwapchainCreateInfoMETA {}
     impl VulkanSwapchainCreateInfoMETA {
         pub const VERSION: u32 = sys::META_vulkan_swapchain_create_info_SPEC_VERSION;
@@ -4700,6 +5082,37 @@ pub mod raw {
     impl HeadsetIdMETA {
         pub const VERSION: u32 = sys::META_headset_id_SPEC_VERSION;
         pub const NAME: &'static [u8] = sys::META_HEADSET_ID_EXTENSION_NAME;
+    }
+    #[derive(Copy, Clone)]
+    pub struct PassthroughColorLutMETA {
+        pub create_passthrough_color_lut: pfn::CreatePassthroughColorLutMETA,
+        pub destroy_passthrough_color_lut: pfn::DestroyPassthroughColorLutMETA,
+        pub update_passthrough_color_lut: pfn::UpdatePassthroughColorLutMETA,
+    }
+    impl PassthroughColorLutMETA {
+        pub const VERSION: u32 = sys::META_passthrough_color_lut_SPEC_VERSION;
+        pub const NAME: &'static [u8] = sys::META_PASSTHROUGH_COLOR_LUT_EXTENSION_NAME;
+        #[doc = r" Load the extension's function pointer table"]
+        #[doc = r""]
+        #[doc = r" # Safety"]
+        #[doc = r""]
+        #[doc = r" `instance` must be a valid instance handle."]
+        pub unsafe fn load(entry: &Entry, instance: sys::Instance) -> Result<Self> {
+            Ok(Self {
+                create_passthrough_color_lut: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrCreatePassthroughColorLutMETA\0"),
+                )?),
+                destroy_passthrough_color_lut: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrDestroyPassthroughColorLutMETA\0"),
+                )?),
+                update_passthrough_color_lut: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrUpdatePassthroughColorLutMETA\0"),
+                )?),
+            })
+        }
     }
     #[derive(Copy, Clone)]
     pub struct Ml2ControllerInteractionML {}
@@ -5109,6 +5522,12 @@ pub mod raw {
                 )?),
             })
         }
+    }
+    #[derive(Copy, Clone)]
+    pub struct ControllerInteractionOPPO {}
+    impl ControllerInteractionOPPO {
+        pub const VERSION: u32 = sys::OPPO_controller_interaction_SPEC_VERSION;
+        pub const NAME: &'static [u8] = sys::OPPO_CONTROLLER_INTERACTION_EXTENSION_NAME;
     }
     #[derive(Copy, Clone)]
     pub struct TrackingOptimizationSettingsQCOM {
@@ -6108,16 +6527,16 @@ pub(crate) mod builder {
             self.inner.space = value.as_raw();
             self
         }
-        // #[inline]
-        // pub fn passthrough(mut self, value: &'a PassthroughHTC) -> Self {
-        //     self.inner.passthrough = value.as_raw();
-        //     self
-        // }
-        // #[inline]
-        // pub fn color(mut self, value: PassthroughColorHTC<'a>) -> Self {
-        //     self.inner.color = value.inner;
-        //     self
-        // }
+        #[inline]
+        pub fn passthrough(mut self, value: &'a PassthroughHTC) -> Self {
+            self.inner.passthrough = value.as_raw();
+            self
+        }
+        #[inline]
+        pub fn color(mut self, value: PassthroughColorHTC<'a>) -> Self {
+            self.inner.color = value.inner;
+            self
+        }
     }
     impl<'a, G: Graphics> Deref for CompositionLayerPassthroughHTC<'a, G> {
         type Target = CompositionLayerBase<'a, G>;
