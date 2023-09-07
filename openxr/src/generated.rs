@@ -2874,10 +2874,10 @@ impl<'a> VirtualKeyboardCommitTextMETA<'a> {
     pub fn keyboard(self) -> sys::VirtualKeyboardMETA {
         (self.0).keyboard
     }
-    #[inline]
-    pub fn text(self) -> [c_char; MAX_VIRTUAL_KEYBOARD_COMMIT_TEXT_SIZE_META] {
-        (self.0).text
-    }
+    // #[inline]
+    // pub fn text(self) -> [c_char; MAX_VIRTUAL_KEYBOARD_COMMIT_TEXT_SIZE_META] {
+    //     (self.0).text
+    // }
 }
 #[derive(Copy, Clone)]
 pub struct VirtualKeyboardBackspaceMETA<'a>(&'a sys::EventDataVirtualKeyboardBackspaceMETA);
@@ -6527,16 +6527,16 @@ pub(crate) mod builder {
             self.inner.space = value.as_raw();
             self
         }
-        #[inline]
-        pub fn passthrough(mut self, value: &'a PassthroughHTC) -> Self {
-            self.inner.passthrough = value.as_raw();
-            self
-        }
-        #[inline]
-        pub fn color(mut self, value: PassthroughColorHTC<'a>) -> Self {
-            self.inner.color = value.inner;
-            self
-        }
+        // #[inline]
+        // pub fn passthrough(mut self, value: &'a PassthroughHTC) -> Self {
+        //     self.inner.passthrough = value.as_raw();
+        //     self
+        // }
+        // #[inline]
+        // pub fn color(mut self, value: PassthroughColorHTC<'a>) -> Self {
+        //     self.inner.color = value.inner;
+        //     self
+        // }
     }
     impl<'a, G: Graphics> Deref for CompositionLayerPassthroughHTC<'a, G> {
         type Target = CompositionLayerBase<'a, G>;

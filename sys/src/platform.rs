@@ -23,6 +23,7 @@ pub type VkComponentSwizzle = i32;
 pub type VkFilter = i32;
 pub type VkGetInstanceProcAddr =
     unsafe extern "system" fn(VkInstance, *const c_char) -> Option<unsafe extern "system" fn()>;
+pub type EglGetProcAddressMNDX = unsafe extern "system" fn(*const c_char) -> *mut c_void;
 
 // Xlib
 pub type GLXFBConfig = *mut c_void;

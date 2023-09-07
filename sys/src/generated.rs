@@ -6187,7 +6187,7 @@ impl CompositionLayerAlphaBlendFB {
 pub struct GraphicsBindingEGLMNDX {
     pub ty: StructureType,
     pub next: *const c_void,
-    pub get_proc_address: Option<pfn::EglGetProcAddressMNDX>,
+    pub get_proc_address: Option<EglGetProcAddressMNDX>,
     pub display: EGLDisplay,
     pub config: EGLConfig,
     pub context: EGLContext,
