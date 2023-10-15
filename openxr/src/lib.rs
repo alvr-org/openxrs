@@ -43,6 +43,8 @@ mod passthrough;
 pub use passthrough::*;
 mod eye_tracking_social;
 pub use eye_tracking_social::*;
+mod body_tracking_fb;
+pub use body_tracking_fb::*;
 mod face_tracking_fb;
 pub use face_tracking_fb::*;
 mod htc_facial_tracking;
