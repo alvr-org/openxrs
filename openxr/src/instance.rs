@@ -185,9 +185,15 @@ impl Instance {
     }
 
     #[inline]
-    pub fn supports_fb_face_tracking(&self, system: SystemId) -> Result<bool> {
-        let props = self.ext_props(system, sys::SystemFaceTrackingPropertiesFB::out)?;
-        Ok(props.supports_face_tracking.into())
+    pub fn supports_fb_visual_face_tracking(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemFaceTrackingProperties2FB::out)?;
+        Ok(props.supports_visual_face_tracking.into())
+    }
+
+    #[inline]
+    pub fn supports_fb_audio_face_tracking(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemFaceTrackingProperties2FB::out)?;
+        Ok(props.supports_audio_face_tracking.into())
     }
 
     #[inline]

@@ -16,7 +16,7 @@ pub use sys::{
     Extent2Df, Extent2Di, Extent3DfEXT, Extent3DfFB, ExternalCameraAttachedToDeviceOCULUS,
     ExternalCameraExtrinsicsOCULUS, ExternalCameraIntrinsicsOCULUS,
     ExternalCameraStatusFlagsOCULUS, EyeCalibrationStatusML, EyeExpressionHTC, EyePositionFB,
-    EyeVisibility, FaceConfidenceFB, FaceExpressionFB, FaceExpressionSetFB, FacialTrackingTypeHTC,
+    EyeVisibility, FaceConfidence2FB, FaceExpressionFB, FaceExpressionSet2FB, FacialTrackingTypeHTC,
     ForceFeedbackCurlApplyLocationMNDX, ForceFeedbackCurlLocationMNDX, FormFactor,
     FoveationConfigurationHTC, FoveationDynamicFB, FoveationDynamicFlagsHTC,
     FoveationEyeTrackedProfileCreateFlagsMETA, FoveationEyeTrackedStateFlagsMETA, FoveationLevelFB,
@@ -108,7 +108,7 @@ pub struct ExtensionSet {
     pub fb_scene: bool,
     pub fb_scene_capture: bool,
     pub fb_spatial_entity_container: bool,
-    pub fb_face_tracking: bool,
+    pub fb_face_tracking2: bool,
     pub fb_eye_tracking_social: bool,
     pub fb_passthrough_keyboard_hands: bool,
     pub fb_composition_layer_settings: bool,
@@ -369,8 +369,8 @@ impl ExtensionSet {
                 raw::SpatialEntityContainerFB::NAME => {
                     out.fb_spatial_entity_container = true;
                 }
-                raw::FaceTrackingFB::NAME => {
-                    out.fb_face_tracking = true;
+                raw::FaceTracking2FB::NAME => {
+                    out.fb_face_tracking2 = true;
                 }
                 raw::EyeTrackingSocialFB::NAME => {
                     out.fb_eye_tracking_social = true;
@@ -902,8 +902,8 @@ impl ExtensionSet {
             }
         }
         {
-            if self.fb_face_tracking {
-                out.push(raw::FaceTrackingFB::NAME.into());
+            if self.fb_face_tracking2 {
+                out.push(raw::FaceTracking2FB::NAME.into());
             }
         }
         {
@@ -1385,7 +1385,7 @@ pub struct InstanceExtensions {
     pub fb_scene: Option<raw::SceneFB>,
     pub fb_scene_capture: Option<raw::SceneCaptureFB>,
     pub fb_spatial_entity_container: Option<raw::SpatialEntityContainerFB>,
-    pub fb_face_tracking: Option<raw::FaceTrackingFB>,
+    pub fb_face_tracking2: Option<raw::FaceTracking2FB>,
     pub fb_eye_tracking_social: Option<raw::EyeTrackingSocialFB>,
     pub fb_passthrough_keyboard_hands: Option<raw::PassthroughKeyboardHandsFB>,
     pub fb_composition_layer_settings: Option<raw::CompositionLayerSettingsFB>,
@@ -1760,8 +1760,8 @@ impl InstanceExtensions {
             } else {
                 None
             },
-            fb_face_tracking: if required.fb_face_tracking {
-                Some(raw::FaceTrackingFB::load(entry, instance)?)
+            fb_face_tracking2: if required.fb_face_tracking2 {
+                Some(raw::FaceTracking2FB::load(entry, instance)?)
             } else {
                 None
             },
@@ -4247,14 +4247,14 @@ pub mod raw {
         }
     }
     #[derive(Copy, Clone)]
-    pub struct FaceTrackingFB {
-        pub create_face_tracker: pfn::CreateFaceTrackerFB,
-        pub destroy_face_tracker: pfn::DestroyFaceTrackerFB,
-        pub get_face_expression_weights: pfn::GetFaceExpressionWeightsFB,
+    pub struct FaceTracking2FB {
+        pub create_face_tracker2: pfn::CreateFaceTracker2FB,
+        pub destroy_face_tracker2: pfn::DestroyFaceTracker2FB,
+        pub get_face_expression_weights2: pfn::GetFaceExpressionWeights2FB,
     }
-    impl FaceTrackingFB {
+    impl FaceTracking2FB {
         pub const VERSION: u32 = sys::FB_face_tracking_SPEC_VERSION;
-        pub const NAME: &'static [u8] = sys::FB_FACE_TRACKING_EXTENSION_NAME;
+        pub const NAME: &'static [u8] = sys::FB_FACE_TRACKING2_EXTENSION_NAME;
         #[doc = r" Load the extension's function pointer table"]
         #[doc = r""]
         #[doc = r" # Safety"]
@@ -4262,17 +4262,17 @@ pub mod raw {
         #[doc = r" `instance` must be a valid instance handle."]
         pub unsafe fn load(entry: &Entry, instance: sys::Instance) -> Result<Self> {
             Ok(Self {
-                create_face_tracker: mem::transmute(entry.get_instance_proc_addr(
+                create_face_tracker2: mem::transmute(entry.get_instance_proc_addr(
                     instance,
-                    CStr::from_bytes_with_nul_unchecked(b"xrCreateFaceTrackerFB\0"),
+                    CStr::from_bytes_with_nul_unchecked(b"xrCreateFaceTracker2FB\0"),
                 )?),
-                destroy_face_tracker: mem::transmute(entry.get_instance_proc_addr(
+                destroy_face_tracker2: mem::transmute(entry.get_instance_proc_addr(
                     instance,
-                    CStr::from_bytes_with_nul_unchecked(b"xrDestroyFaceTrackerFB\0"),
+                    CStr::from_bytes_with_nul_unchecked(b"xrDestroyFaceTracker2FB\0"),
                 )?),
-                get_face_expression_weights: mem::transmute(entry.get_instance_proc_addr(
+                get_face_expression_weights2: mem::transmute(entry.get_instance_proc_addr(
                     instance,
-                    CStr::from_bytes_with_nul_unchecked(b"xrGetFaceExpressionWeightsFB\0"),
+                    CStr::from_bytes_with_nul_unchecked(b"xrGetFaceExpressionWeights2FB\0"),
                 )?),
             })
         }

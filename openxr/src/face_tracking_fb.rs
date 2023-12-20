@@ -2,14 +2,14 @@ use std::{mem::MaybeUninit, ptr, sync::Arc};
 
 use crate::*;
 
-pub struct FaceTrackerFB {
+pub struct FaceTracker2FB {
     session: Arc<session::SessionInner>,
-    handle: sys::FaceTrackerFB,
+    handle: sys::FaceTracker2FB,
 }
 
-impl FaceTrackerFB {
+impl FaceTracker2FB {
     #[inline]
-    pub fn as_raw(&self) -> sys::FaceTrackerFB {
+    pub fn as_raw(&self) -> sys::FaceTracker2FB {
         self.handle
     }
 
@@ -19,7 +19,7 @@ impl FaceTrackerFB {
     ///
     /// `handle` must be a valid face tracker handle associated with `session`.
     #[inline]
-    pub unsafe fn from_raw<G>(session: &Session<G>, handle: sys::FaceTrackerFB) -> Self {
+    pub unsafe fn from_raw<G>(session: &Session<G>, handle: sys::FaceTracker2FB) -> Self {
         Self {
             handle,
             session: session.inner.clone(),
@@ -27,56 +27,58 @@ impl FaceTrackerFB {
     }
 
     #[inline]
-    fn fp(&self) -> &raw::FaceTrackingFB {
+    fn fp(&self) -> &raw::FaceTracking2FB {
         self.session
             .instance
             .exts()
-            .fb_face_tracking
+            .fb_face_tracking2
             .as_ref()
-            .expect("Somehow created FaceTrackerFB without XR_FB_face_tracking being enabled")
+            .expect("Somehow created FaceTrackerFB without XR_FB_face_tracking2 being enabled")
     }
 
     #[inline]
     pub fn get_face_expression_weights(
         &self,
         time: Time,
-    ) -> Result<Option<FaceExpressionWeightsFB>> {
-        let expression_info = sys::FaceExpressionInfoFB {
-            ty: sys::FaceExpressionInfoFB::TYPE,
+    ) -> Result<Option<FaceExpressionWeights2FB>> {
+        let expression_info = sys::FaceExpressionInfo2FB {
+            ty: sys::FaceExpressionInfo2FB::TYPE,
             next: ptr::null(),
             time,
         };
 
-        let mut weights = MaybeUninit::<[f32; FACE_EXPRESSION_COUNT]>::uninit();
-        let mut confidences = [0.0; FACE_CONFIDENCE_COUNT];
+        let mut weights = MaybeUninit::<[f32; FACE_EXPRESSION2_COUNT]>::uninit();
+        let mut confidences = [0.0; FACE_CONFIDENCE2_COUNT];
 
-        let mut expression_weights = sys::FaceExpressionWeightsFB {
-            ty: sys::FaceExpressionWeightsFB::TYPE,
+        let mut expression_weights = sys::FaceExpressionWeights2FB {
+            ty: sys::FaceExpressionWeights2FB::TYPE,
             next: ptr::null_mut(),
-            weight_count: FACE_EXPRESSION_COUNT as u32,
+            weight_count: FACE_EXPRESSION2_COUNT as u32,
             weights: weights.as_mut_ptr() as _,
-            confidence_count: FACE_CONFIDENCE_COUNT as u32,
+            confidence_count: FACE_CONFIDENCE2_COUNT as u32,
             confidences: confidences.as_mut_ptr() as _,
-            status: sys::FaceExpressionStatusFB::default(),
+            is_valid: sys::FALSE,
+            is_eye_following_blendshapes_valid: sys::FALSE,
+            data_source: sys::FaceTrackingDataSource2FB::from_raw(0),
             time,
         };
 
         unsafe {
-            cvt((self.fp().get_face_expression_weights)(
+            cvt((self.fp().get_face_expression_weights2)(
                 self.handle,
                 &expression_info,
                 &mut expression_weights,
             ))?;
 
-            if expression_weights.status.is_valid.into() {
-                Ok(Some(FaceExpressionWeightsFB {
+            if expression_weights.is_valid.into() {
+                Ok(Some(FaceExpressionWeights2FB {
                     weights: weights.assume_init(),
                     lower_face_confidence: confidences[0],
                     upper_face_confidence: confidences[1],
                     is_eye_following_blendshapes_valid: expression_weights
-                        .status
                         .is_eye_following_blendshapes_valid
                         .into(),
+                    data_source: expression_weights.data_source,
                     time,
                 }))
             } else {
@@ -87,47 +89,58 @@ impl FaceTrackerFB {
 }
 
 impl<G> Session<G> {
-    pub fn create_face_tracker_fb(&self) -> Result<FaceTrackerFB> {
+    pub fn create_face_tracker2_fb(&self, visual: bool, audio: bool) -> Result<FaceTracker2FB> {
         let fp = self
             .inner
             .instance
             .exts()
-            .fb_face_tracking
+            .fb_face_tracking2
             .as_ref()
             .ok_or(sys::Result::ERROR_EXTENSION_NOT_PRESENT)?;
 
-        let mut out = sys::FaceTrackerFB::NULL;
-        let info = sys::FaceTrackerCreateInfoFB {
-            ty: sys::FaceTrackerCreateInfoFB::TYPE,
+        let mut requested_data_sources = vec![];
+        if visual {
+            requested_data_sources.push(sys::FaceTrackingDataSource2FB::VISUAL);
+        }
+        if audio {
+            requested_data_sources.push(sys::FaceTrackingDataSource2FB::AUDIO);
+        }
+
+        let mut out = sys::FaceTracker2FB::NULL;
+        let info = sys::FaceTrackerCreateInfo2FB {
+            ty: sys::FaceTrackerCreateInfo2FB::TYPE,
             next: ptr::null(),
-            face_expression_set: FaceExpressionSetFB::DEFAULT,
+            face_expression_set: FaceExpressionSet2FB::DEFAULT,
+            requested_data_source_count: requested_data_sources.len() as u32,
+            requested_data_sources: requested_data_sources.as_mut_ptr(),
         };
         let handle = unsafe {
-            cvt((fp.create_face_tracker)(self.as_raw(), &info, &mut out))?;
+            cvt((fp.create_face_tracker2)(self.as_raw(), &info, &mut out))?;
             out
         };
-        Ok(FaceTrackerFB {
+        Ok(FaceTracker2FB {
             session: self.inner.clone(),
             handle,
         })
     }
 }
 
-impl Drop for FaceTrackerFB {
+impl Drop for FaceTracker2FB {
     fn drop(&mut self) {
         unsafe {
-            (self.fp().destroy_face_tracker)(self.handle);
+            (self.fp().destroy_face_tracker2)(self.handle);
         }
     }
 }
 
-pub struct FaceExpressionWeightsFB {
-    pub weights: [f32; FACE_EXPRESSION_COUNT],
+pub struct FaceExpressionWeights2FB {
+    pub weights: [f32; FACE_EXPRESSION2_COUNT],
     pub lower_face_confidence: f32,
     pub upper_face_confidence: f32,
     pub is_eye_following_blendshapes_valid: bool,
+    pub data_source: sys::FaceTrackingDataSource2FB,
     pub time: Time,
 }
 
-const FACE_EXPRESSION_COUNT: usize = 63;
-const FACE_CONFIDENCE_COUNT: usize = 2;
+const FACE_EXPRESSION2_COUNT: usize = 70;
+const FACE_CONFIDENCE2_COUNT: usize = 2;

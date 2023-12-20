@@ -321,10 +321,10 @@ impl StructureType {
     pub const FOVEATION_EYE_TRACKED_PROFILE_CREATE_INFO_META: StructureType = Self(1000200000i32);
     pub const FOVEATION_EYE_TRACKED_STATE_META: StructureType = Self(1000200001i32);
     pub const SYSTEM_FOVEATION_EYE_TRACKED_PROPERTIES_META: StructureType = Self(1000200002i32);
-    pub const SYSTEM_FACE_TRACKING_PROPERTIES_FB: StructureType = Self(1000201004i32);
-    pub const FACE_TRACKER_CREATE_INFO_FB: StructureType = Self(1000201005i32);
-    pub const FACE_EXPRESSION_INFO_FB: StructureType = Self(1000201002i32);
-    pub const FACE_EXPRESSION_WEIGHTS_FB: StructureType = Self(1000201006i32);
+    pub const SYSTEM_FACE_TRACKING_PROPERTIES2_FB: StructureType = Self(1000201004i32);
+    pub const FACE_TRACKER_CREATE_INFO2_FB: StructureType = Self(1000201005i32);
+    pub const FACE_EXPRESSION_INFO2_FB: StructureType = Self(1000201002i32);
+    pub const FACE_EXPRESSION_WEIGHTS2_FB: StructureType = Self(1000201006i32);
     pub const EYE_TRACKER_CREATE_INFO_FB: StructureType = Self(1000202001i32);
     pub const EYE_GAZES_INFO_FB: StructureType = Self(1000202002i32);
     pub const EYE_GAZES_FB: StructureType = Self(1000202003i32);
@@ -789,10 +789,10 @@ impl fmt::Debug for StructureType {
             Self::SYSTEM_FOVEATION_EYE_TRACKED_PROPERTIES_META => {
                 Some("SYSTEM_FOVEATION_EYE_TRACKED_PROPERTIES_META")
             }
-            Self::SYSTEM_FACE_TRACKING_PROPERTIES_FB => Some("SYSTEM_FACE_TRACKING_PROPERTIES_FB"),
-            Self::FACE_TRACKER_CREATE_INFO_FB => Some("FACE_TRACKER_CREATE_INFO_FB"),
-            Self::FACE_EXPRESSION_INFO_FB => Some("FACE_EXPRESSION_INFO_FB"),
-            Self::FACE_EXPRESSION_WEIGHTS_FB => Some("FACE_EXPRESSION_WEIGHTS_FB"),
+            Self::SYSTEM_FACE_TRACKING_PROPERTIES2_FB => Some("SYSTEM_FACE_TRACKING_PROPERTIES2_FB"),
+            Self::FACE_TRACKER_CREATE_INFO2_FB => Some("FACE_TRACKER_CREATE_INFO2_FB"),
+            Self::FACE_EXPRESSION_INFO2_FB => Some("FACE_EXPRESSION_INFO2_FB"),
+            Self::FACE_EXPRESSION_WEIGHTS2_FB => Some("FACE_EXPRESSION_WEIGHTS2_FB"),
             Self::EYE_TRACKER_CREATE_INFO_FB => Some("EYE_TRACKER_CREATE_INFO_FB"),
             Self::EYE_GAZES_INFO_FB => Some("EYE_GAZES_INFO_FB"),
             Self::EYE_GAZES_FB => Some("EYE_GAZES_FB"),
@@ -2534,10 +2534,10 @@ impl fmt::Debug for FaceExpressionFB {
 #[doc = "See [XrFaceExpressionSetFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrFaceExpressionSetFB)"]
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct FaceExpressionSetFB(i32);
-impl FaceExpressionSetFB {
+pub struct FaceExpressionSet2FB(i32);
+impl FaceExpressionSet2FB {
     #[doc = "indicates that the created XrFaceTrackerFB tracks the set of blend shapes described by XrFaceExpressionFB enum, i.e. the xrGetFaceExpressionWeightsFB function returns an array of blend shapes with the count of XR_FACE_EXPRESSION_COUNT_FB and can: be indexed using XrFaceExpressionFB."]
-    pub const DEFAULT: FaceExpressionSetFB = Self(0i32);
+    pub const DEFAULT: FaceExpressionSet2FB = Self(0i32);
     pub fn from_raw(x: i32) -> Self {
         Self(x)
     }
@@ -2545,7 +2545,7 @@ impl FaceExpressionSetFB {
         self.0
     }
 }
-impl fmt::Debug for FaceExpressionSetFB {
+impl fmt::Debug for FaceExpressionSet2FB {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         let name = match *self {
             Self::DEFAULT => Some("DEFAULT"),
@@ -2554,14 +2554,12 @@ impl fmt::Debug for FaceExpressionSetFB {
         fmt_enum(fmt, self.0, name)
     }
 }
-#[doc = "See [XrFaceConfidenceFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrFaceConfidenceFB)"]
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct FaceConfidenceFB(i32);
-impl FaceConfidenceFB {
-    pub const LOWER_FACE: FaceConfidenceFB = Self(0i32);
-    pub const UPPER_FACE: FaceConfidenceFB = Self(1i32);
-    pub const COUNT: FaceConfidenceFB = Self(2i32);
+pub struct FaceTrackingDataSource2FB(i32);
+impl FaceTrackingDataSource2FB {
+    pub const VISUAL: FaceTrackingDataSource2FB = Self(0i32);
+    pub const AUDIO: FaceTrackingDataSource2FB = Self(1i32);
     pub fn from_raw(x: i32) -> Self {
         Self(x)
     }
@@ -2569,7 +2567,32 @@ impl FaceConfidenceFB {
         self.0
     }
 }
-impl fmt::Debug for FaceConfidenceFB {
+impl fmt::Debug for FaceTrackingDataSource2FB {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            Self::VISUAL => Some("VISUAL"),
+            Self::AUDIO => Some("AUDIO"),
+            _ => None,
+        };
+        fmt_enum(fmt, self.0, name)
+    }
+}
+#[doc = "See [XrFaceConfidenceFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrFaceConfidenceFB)"]
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct FaceConfidence2FB(i32);
+impl FaceConfidence2FB {
+    pub const LOWER_FACE: FaceConfidence2FB = Self(0i32);
+    pub const UPPER_FACE: FaceConfidence2FB = Self(1i32);
+    pub const COUNT: FaceConfidence2FB = Self(2i32);
+    pub fn from_raw(x: i32) -> Self {
+        Self(x)
+    }
+    pub fn into_raw(self) -> i32 {
+        self.0
+    }
+}
+impl fmt::Debug for FaceConfidence2FB {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         let name = match *self {
             Self::LOWER_FACE => Some("LOWER_FACE"),
@@ -4391,8 +4414,8 @@ handle!(PassthroughHTC);
 #[doc = "See [XrFaceTrackerFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrFaceTrackerFB)"]
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub struct FaceTrackerFB(u64);
-handle!(FaceTrackerFB);
+pub struct FaceTracker2FB(u64);
+handle!(FaceTracker2FB);
 #[doc = "See [XrBodyTrackerFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrBodyTrackerFB)"]
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -6505,13 +6528,14 @@ impl HandJointVelocitiesEXT {
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 #[doc = "See [XrSystemFaceTrackingPropertiesFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemFaceTrackingPropertiesFB) - defined by [XR_FB_face_tracking](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_FB_face_tracking)"]
-pub struct SystemFaceTrackingPropertiesFB {
+pub struct SystemFaceTrackingProperties2FB {
     pub ty: StructureType,
     pub next: *mut c_void,
-    pub supports_face_tracking: Bool32,
+    pub supports_visual_face_tracking: Bool32,
+    pub supports_audio_face_tracking: Bool32,
 }
-impl SystemFaceTrackingPropertiesFB {
-    pub const TYPE: StructureType = StructureType::SYSTEM_FACE_TRACKING_PROPERTIES_FB;
+impl SystemFaceTrackingProperties2FB {
+    pub const TYPE: StructureType = StructureType::SYSTEM_FACE_TRACKING_PROPERTIES2_FB;
     #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
     #[inline]
     pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
@@ -6528,24 +6552,26 @@ impl SystemFaceTrackingPropertiesFB {
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 #[doc = "See [XrFaceTrackerCreateInfoFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrFaceTrackerCreateInfoFB) - defined by [XR_FB_face_tracking](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_FB_face_tracking)"]
-pub struct FaceTrackerCreateInfoFB {
+pub struct FaceTrackerCreateInfo2FB {
     pub ty: StructureType,
     pub next: *const c_void,
-    pub face_expression_set: FaceExpressionSetFB,
+    pub face_expression_set: FaceExpressionSet2FB,
+    pub requested_data_source_count: u32,
+    pub requested_data_sources: *mut FaceTrackingDataSource2FB,
 }
-impl FaceTrackerCreateInfoFB {
-    pub const TYPE: StructureType = StructureType::FACE_TRACKER_CREATE_INFO_FB;
+impl FaceTrackerCreateInfo2FB {
+    pub const TYPE: StructureType = StructureType::FACE_TRACKER_CREATE_INFO2_FB;
 }
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 #[doc = "See [XrFaceExpressionInfoFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrFaceExpressionInfoFB) - defined by [XR_FB_face_tracking](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_FB_face_tracking)"]
-pub struct FaceExpressionInfoFB {
+pub struct FaceExpressionInfo2FB {
     pub ty: StructureType,
     pub next: *const c_void,
     pub time: Time,
 }
-impl FaceExpressionInfoFB {
-    pub const TYPE: StructureType = StructureType::FACE_EXPRESSION_INFO_FB;
+impl FaceExpressionInfo2FB {
+    pub const TYPE: StructureType = StructureType::FACE_EXPRESSION_INFO2_FB;
 }
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
@@ -6557,18 +6583,20 @@ pub struct FaceExpressionStatusFB {
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 #[doc = "See [XrFaceExpressionWeightsFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrFaceExpressionWeightsFB) - defined by [XR_FB_face_tracking](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_FB_face_tracking)"]
-pub struct FaceExpressionWeightsFB {
+pub struct FaceExpressionWeights2FB {
     pub ty: StructureType,
     pub next: *mut c_void,
     pub weight_count: u32,
     pub weights: *mut f32,
     pub confidence_count: u32,
     pub confidences: *mut f32,
-    pub status: FaceExpressionStatusFB,
+    pub is_valid: Bool32,
+    pub is_eye_following_blendshapes_valid: Bool32,
+    pub data_source: FaceTrackingDataSource2FB,
     pub time: Time,
 }
-impl FaceExpressionWeightsFB {
-    pub const TYPE: StructureType = StructureType::FACE_EXPRESSION_WEIGHTS_FB;
+impl FaceExpressionWeights2FB {
+    pub const TYPE: StructureType = StructureType::FACE_EXPRESSION_WEIGHTS2_FB;
     #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
     #[inline]
     pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
@@ -10238,19 +10266,19 @@ pub mod pfn {
         locations: *mut HandJointLocationsEXT,
     ) -> Result;
     #[doc = "See [xrCreateFaceTrackerFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrCreateFaceTrackerFB) - defined by [XR_FB_face_tracking](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_FB_face_tracking)"]
-    pub type CreateFaceTrackerFB = unsafe extern "system" fn(
+    pub type CreateFaceTracker2FB = unsafe extern "system" fn(
         session: Session,
-        create_info: *const FaceTrackerCreateInfoFB,
-        face_tracker: *mut FaceTrackerFB,
+        create_info: *const FaceTrackerCreateInfo2FB,
+        face_tracker: *mut FaceTracker2FB,
     ) -> Result;
     #[doc = "See [xrDestroyFaceTrackerFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrDestroyFaceTrackerFB) - defined by [XR_FB_face_tracking](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_FB_face_tracking)"]
-    pub type DestroyFaceTrackerFB =
-        unsafe extern "system" fn(face_tracker: FaceTrackerFB) -> Result;
+    pub type DestroyFaceTracker2FB =
+        unsafe extern "system" fn(face_tracker: FaceTracker2FB) -> Result;
     #[doc = "See [xrGetFaceExpressionWeightsFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetFaceExpressionWeightsFB) - defined by [XR_FB_face_tracking](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_FB_face_tracking)"]
-    pub type GetFaceExpressionWeightsFB = unsafe extern "system" fn(
-        face_tracker: FaceTrackerFB,
-        expression_info: *const FaceExpressionInfoFB,
-        expression_weights: *mut FaceExpressionWeightsFB,
+    pub type GetFaceExpressionWeights2FB = unsafe extern "system" fn(
+        face_tracker: FaceTracker2FB,
+        expression_info: *const FaceExpressionInfo2FB,
+        expression_weights: *mut FaceExpressionWeights2FB,
     ) -> Result;
     #[doc = "See [xrCreateBodyTrackerFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrCreateBodyTrackerFB) - defined by [XR_FB_body_tracking](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_FB_body_tracking)"]
     pub type CreateBodyTrackerFB = unsafe extern "system" fn(
@@ -11032,7 +11060,7 @@ pub const FB_SCENE_CAPTURE_EXTENSION_NAME: &[u8] = b"XR_FB_scene_capture\0";
 pub const FB_spatial_entity_container_SPEC_VERSION: u32 = 2u32;
 pub const FB_SPATIAL_ENTITY_CONTAINER_EXTENSION_NAME: &[u8] = b"XR_FB_spatial_entity_container\0";
 pub const FB_face_tracking_SPEC_VERSION: u32 = 1u32;
-pub const FB_FACE_TRACKING_EXTENSION_NAME: &[u8] = b"XR_FB_face_tracking\0";
+pub const FB_FACE_TRACKING2_EXTENSION_NAME: &[u8] = b"XR_FB_face_tracking2\0";
 pub const FB_eye_tracking_social_SPEC_VERSION: u32 = 1u32;
 pub const FB_EYE_TRACKING_SOCIAL_EXTENSION_NAME: &[u8] = b"XR_FB_eye_tracking_social\0";
 pub const FB_passthrough_keyboard_hands_SPEC_VERSION: u32 = 2u32;
