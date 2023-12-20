@@ -321,10 +321,10 @@ impl StructureType {
     pub const FOVEATION_EYE_TRACKED_PROFILE_CREATE_INFO_META: StructureType = Self(1000200000i32);
     pub const FOVEATION_EYE_TRACKED_STATE_META: StructureType = Self(1000200001i32);
     pub const SYSTEM_FOVEATION_EYE_TRACKED_PROPERTIES_META: StructureType = Self(1000200002i32);
-    pub const SYSTEM_FACE_TRACKING_PROPERTIES2_FB: StructureType = Self(1000201004i32);
-    pub const FACE_TRACKER_CREATE_INFO2_FB: StructureType = Self(1000201005i32);
-    pub const FACE_EXPRESSION_INFO2_FB: StructureType = Self(1000201002i32);
-    pub const FACE_EXPRESSION_WEIGHTS2_FB: StructureType = Self(1000201006i32);
+    pub const SYSTEM_FACE_TRACKING_PROPERTIES2_FB: StructureType = Self(1000287013i32);
+    pub const FACE_TRACKER_CREATE_INFO2_FB: StructureType = Self(1000287014i32);
+    pub const FACE_EXPRESSION_INFO2_FB: StructureType = Self(1000287015i32);
+    pub const FACE_EXPRESSION_WEIGHTS2_FB: StructureType = Self(1000287016i32);
     pub const EYE_TRACKER_CREATE_INFO_FB: StructureType = Self(1000202001i32);
     pub const EYE_GAZES_INFO_FB: StructureType = Self(1000202002i32);
     pub const EYE_GAZES_FB: StructureType = Self(1000202003i32);
