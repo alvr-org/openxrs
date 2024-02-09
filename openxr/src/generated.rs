@@ -82,6 +82,7 @@ pub struct ExtensionSet {
     pub fb_swapchain_update_state: bool,
     pub fb_composition_layer_secure_content: bool,
     pub fb_body_tracking: bool,
+    pub meta_body_tracking_full_body: bool,
     pub fb_display_refresh_rate: bool,
     pub fb_color_space: bool,
     pub fb_hand_tracking_mesh: bool,
@@ -292,6 +293,9 @@ impl ExtensionSet {
                 }
                 raw::BodyTrackingFB::NAME => {
                     out.fb_body_tracking = true;
+                }
+                raw::BodyTrackingFullBodyMETA::NAME => {
+                    out.meta_body_tracking_full_body = true;
                 }
                 raw::DisplayRefreshRateFB::NAME => {
                     out.fb_display_refresh_rate = true;
@@ -773,6 +777,11 @@ impl ExtensionSet {
         {
             if self.fb_body_tracking {
                 out.push(raw::BodyTrackingFB::NAME.into());
+            }
+        }
+        {
+            if self.meta_body_tracking_full_body {
+                out.push(raw::BodyTrackingFullBodyMETA::NAME.into());
             }
         }
         {
@@ -1358,6 +1367,7 @@ pub struct InstanceExtensions {
     pub fb_swapchain_update_state: Option<raw::SwapchainUpdateStateFB>,
     pub fb_composition_layer_secure_content: Option<raw::CompositionLayerSecureContentFB>,
     pub fb_body_tracking: Option<raw::BodyTrackingFB>,
+    pub meta_body_tracking_full_body: Option<raw::BodyTrackingFullBodyMETA>,
     pub fb_display_refresh_rate: Option<raw::DisplayRefreshRateFB>,
     pub fb_color_space: Option<raw::ColorSpaceFB>,
     pub fb_hand_tracking_mesh: Option<raw::HandTrackingMeshFB>,
@@ -1629,6 +1639,11 @@ impl InstanceExtensions {
             },
             fb_body_tracking: if required.fb_body_tracking {
                 Some(raw::BodyTrackingFB::load(entry, instance)?)
+            } else {
+                None
+            },
+            meta_body_tracking_full_body: if required.meta_body_tracking_full_body {
+                Some(raw::BodyTrackingFullBodyMETA::load(entry, instance)?)
             } else {
                 None
             },
@@ -3655,6 +3670,42 @@ pub mod raw {
     impl BodyTrackingFB {
         pub const VERSION: u32 = sys::FB_body_tracking_SPEC_VERSION;
         pub const NAME: &'static [u8] = sys::FB_BODY_TRACKING_EXTENSION_NAME;
+        #[doc = r" Load the extension's function pointer table"]
+        #[doc = r""]
+        #[doc = r" # Safety"]
+        #[doc = r""]
+        #[doc = r" `instance` must be a valid instance handle."]
+        pub unsafe fn load(entry: &Entry, instance: sys::Instance) -> Result<Self> {
+            Ok(Self {
+                create_body_tracker: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrCreateBodyTrackerFB\0"),
+                )?),
+                destroy_body_tracker: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrDestroyBodyTrackerFB\0"),
+                )?),
+                locate_body_joints: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrLocateBodyJointsFB\0"),
+                )?),
+                get_body_skeleton: mem::transmute(entry.get_instance_proc_addr(
+                    instance,
+                    CStr::from_bytes_with_nul_unchecked(b"xrGetBodySkeletonFB\0"),
+                )?),
+            })
+        }
+    }
+    #[derive(Copy, Clone)]
+    pub struct BodyTrackingFullBodyMETA {
+        pub create_body_tracker: pfn::CreateBodyTrackerFullBodyMETA,
+        pub destroy_body_tracker: pfn::DestroyBodyTrackerFullBodyMETA,
+        pub locate_body_joints: pfn::LocateBodyJointsFullBodyMETA,
+        pub get_body_skeleton: pfn::GetBodySkeletonFullBodyMETA,
+    }
+    impl BodyTrackingFullBodyMETA {
+        pub const VERSION: u32 = sys::META_body_tracking_full_body_SPEC_VERSION;
+        pub const NAME: &'static [u8] = sys::META_BODY_TRACKING_FULL_BODY_EXTENSION_NAME;
         #[doc = r" Load the extension's function pointer table"]
         #[doc = r""]
         #[doc = r" # Safety"]
