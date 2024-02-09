@@ -2683,7 +2683,7 @@ impl BodyJointFB {
     pub fn from_raw(x: i32) -> Self {
         Self(x)
     }
-    pub fn into_raw(self) -> i32 {
+    pub const fn into_raw(self) -> i32 {
         self.0
     }
 }

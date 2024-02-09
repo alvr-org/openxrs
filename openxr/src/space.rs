@@ -204,6 +204,50 @@ impl Space {
         }
     }
 
+    /// Determine the locations of the joints of a body tracker relative to this space at a
+    /// specified time, if currently known by the runtime.
+    ///
+    /// XR_FB_body_tracking must be enabled.
+    #[inline]
+    pub fn locate_body_joints_fb(
+        &self,
+        tracker: &BodyTrackerFB,
+        time: Time,
+    ) -> Result<Option<BodyJointFBLocations>> {
+        // This assert allows this function to be safe.
+        assert_eq!(&*self.session as *const session::SessionInner, &*tracker.session as *const session::SessionInner,
+                   "`self` and `tracker` must have been created, allocated, or retrieved from the same `Session`");
+        unsafe {
+            let locate_info = sys::BodyJointsLocateInfoFB {
+                ty: sys::BodyJointsLocateInfoFB::TYPE,
+                next: ptr::null(),
+                base_space: self.as_raw(),
+                time,
+            };
+            let mut locations = MaybeUninit::<[BodyJointLocationFB; BODY_JOINT_COUNT_FB]>::uninit();
+            let mut location_info = sys::BodyJointLocationsFB {
+                ty: sys::BodyJointLocationsFB::TYPE,
+                next: ptr::null_mut(),
+                is_active: false.into(),
+                confidence: 0.0,
+                joint_count: BODY_JOINT_COUNT_FB as u32,
+                joint_locations: locations.as_mut_ptr() as _,
+                skeleton_changed_count: 0,
+                time: time,
+            };
+            cvt((tracker.fp().locate_body_joints)(
+                tracker.as_raw(),
+                &locate_info,
+                &mut location_info,
+            ))?;
+            Ok(if location_info.is_active.into() {
+                Some(locations.assume_init())
+            } else {
+                None
+            })
+        }
+    }
+
     // Private helper
     #[inline]
     fn fp(&self) -> &raw::Instance {
