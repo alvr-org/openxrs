@@ -2,7 +2,7 @@ use std::{ptr, sync::Arc};
 
 use crate::*;
 
-pub const BODY_JOINT_COUNT_FB: usize = BodyJointFB::COUNT.into_raw() as usize;
+pub const BODY_JOINT_COUNT_FB: usize = 70;
 
 pub struct BodyTrackerFB {
     pub(crate) session: Arc<session::SessionInner>,
