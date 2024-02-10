@@ -2998,6 +2998,7 @@ pub struct BodyJointSetFullBodyMETA(i32);
 impl BodyJointSetFullBodyMETA {
     #[doc = "Indicates that the created XrBodyTrackerFB tracks the set of body joints described by XrBodyJointFB enum, i.e. the xrLocateBodyJointsFB function returns an array of joint locations with the count of XR_BODY_JOINT_COUNT_FB and can be indexed using XrBodyJointFB."]
     pub const DEFAULT: BodyJointSetFullBodyMETA = Self(0i32);
+    pub const FULL_BODY: BodyJointSetFullBodyMETA = Self(1000274000i32);
     pub fn from_raw(x: i32) -> Self {
         Self(x)
     }
