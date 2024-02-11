@@ -47,8 +47,8 @@ mod face_tracking_fb;
 pub use face_tracking_fb::*;
 mod htc_facial_tracking;
 pub use htc_facial_tracking::*;
-mod body_tracking_fb;
-pub use body_tracking_fb::*;
+mod body_tracking_full_body_meta;
+pub use body_tracking_full_body_meta::*;
 
 pub use builder::{
     CompositionLayerBase, CompositionLayerCubeKHR, CompositionLayerCylinderKHR,

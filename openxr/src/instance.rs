@@ -179,6 +179,12 @@ impl Instance {
     }
 
     #[inline]
+    pub fn supports_meta_body_tracking_full_body(&self, system: SystemId) -> Result<bool> {
+        let props = self.ext_props(system, sys::SystemBodyTrackingFullBodyPropertiesMETA::out)?;
+        Ok(props.supports_full_body_tracking.into())
+    }
+
+    #[inline]
     pub fn supports_eye_gaze_interaction(&self, system: SystemId) -> Result<bool> {
         let props = self.ext_props(system, sys::SystemEyeGazeInteractionPropertiesEXT::out)?;
         Ok(props.supports_eye_gaze_interaction.into())

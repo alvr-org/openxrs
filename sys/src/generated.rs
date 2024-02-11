@@ -194,6 +194,11 @@ impl StructureType {
     pub const SYSTEM_BODY_TRACKING_PROPERTIES_FB: StructureType = Self(1000076004i32);
     pub const BODY_JOINT_LOCATIONS_FB: StructureType = Self(1000076005i32);
     pub const BODY_SKELETON_FB: StructureType = Self(1000076006i32);
+    pub const BODY_TRACKER_FULL_BODY_CREATE_INFO_META: StructureType = Self(1000076001i32);
+    pub const BODY_JOINTS_FULL_BODY_LOCATE_INFO_META: StructureType = Self(1000076002i32);
+    pub const SYSTEM_BODY_TRACKING_FULL_BODY_PROPERTIES_META: StructureType = Self(1000274000i32);
+    pub const BODY_JOINT_FULL_BODY_LOCATIONS_META: StructureType = Self(1000076005i32);
+    pub const BODY_SKELETON_FULL_BODY_META: StructureType = Self(1000076006i32);
     pub const INTERACTION_PROFILE_DPAD_BINDING_EXT: StructureType = Self(1000078000i32);
     pub const INTERACTION_PROFILE_ANALOG_THRESHOLD_VALVE: StructureType = Self(1000079000i32);
     pub const HAND_JOINTS_MOTION_RANGE_INFO_EXT: StructureType = Self(1000080000i32);
@@ -589,6 +594,11 @@ impl fmt::Debug for StructureType {
             Self::SYSTEM_BODY_TRACKING_PROPERTIES_FB => Some("SYSTEM_BODY_TRACKING_PROPERTIES_FB"),
             Self::BODY_JOINT_LOCATIONS_FB => Some("BODY_JOINT_LOCATIONS_FB"),
             Self::BODY_SKELETON_FB => Some("BODY_SKELETON_FB"),
+            Self::BODY_TRACKER_FULL_BODY_CREATE_INFO_META => Some("BODY_TRACKER_FULL_BODY_CREATE_INFO_META"),
+            Self::BODY_JOINTS_FULL_BODY_LOCATE_INFO_META => Some("BODY_JOINTS_FULL_BODY_LOCATE_INFO_META"),
+            Self::SYSTEM_BODY_TRACKING_FULL_BODY_PROPERTIES_META => Some("SYSTEM_BODY_TRACKING_FULL_BODY_PROPERTIES_META"),
+            Self::BODY_JOINT_FULL_BODY_LOCATIONS_META => Some("BODY_JOINT_FULL_BODY_LOCATIONS_META"),
+            Self::BODY_SKELETON_FULL_BODY_META => Some("BODY_SKELETON_FULL_BODY_META"),
             Self::INTERACTION_PROFILE_DPAD_BINDING_EXT => {
                 Some("INTERACTION_PROFILE_DPAD_BINDING_EXT")
             }
@@ -2790,6 +2800,221 @@ impl fmt::Debug for BodyJointSetFB {
         fmt_enum(fmt, self.0, name)
     }
 }
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct FullBodyJointMETA(i32);
+impl FullBodyJointMETA {
+    pub const ROOT: FullBodyJointMETA = Self(0i32);
+    pub const HIPS: FullBodyJointMETA = Self(1i32);
+    pub const SPINE_LOWER: FullBodyJointMETA = Self(2i32);
+    pub const SPINE_MIDDLE: FullBodyJointMETA = Self(3i32);
+    pub const SPINE_UPPER: FullBodyJointMETA = Self(4i32);
+    pub const CHEST: FullBodyJointMETA = Self(5i32);
+    pub const NECK: FullBodyJointMETA = Self(6i32);
+    pub const HEAD: FullBodyJointMETA = Self(7i32);
+    pub const LEFT_SHOULDER: FullBodyJointMETA = Self(8i32);
+    pub const LEFT_SCAPULA: FullBodyJointMETA = Self(9i32);
+    pub const LEFT_ARM_UPPER: FullBodyJointMETA = Self(10i32);
+    pub const LEFT_ARM_LOWER: FullBodyJointMETA = Self(11i32);
+    pub const LEFT_HAND_WRIST_TWIST: FullBodyJointMETA = Self(12i32);
+    pub const RIGHT_SHOULDER: FullBodyJointMETA = Self(13i32);
+    pub const RIGHT_SCAPULA: FullBodyJointMETA = Self(14i32);
+    pub const RIGHT_ARM_UPPER: FullBodyJointMETA = Self(15i32);
+    pub const RIGHT_ARM_LOWER: FullBodyJointMETA = Self(16i32);
+    pub const RIGHT_HAND_WRIST_TWIST: FullBodyJointMETA = Self(17i32);
+    pub const LEFT_HAND_PALM: FullBodyJointMETA = Self(18i32);
+    pub const LEFT_HAND_WRIST: FullBodyJointMETA = Self(19i32);
+    pub const LEFT_HAND_THUMB_METACARPAL: FullBodyJointMETA = Self(20i32);
+    pub const LEFT_HAND_THUMB_PROXIMAL: FullBodyJointMETA = Self(21i32);
+    pub const LEFT_HAND_THUMB_DISTAL: FullBodyJointMETA = Self(22i32);
+    pub const LEFT_HAND_THUMB_TIP: FullBodyJointMETA = Self(23i32);
+    pub const LEFT_HAND_INDEX_METACARPAL: FullBodyJointMETA = Self(24i32);
+    pub const LEFT_HAND_INDEX_PROXIMAL: FullBodyJointMETA = Self(25i32);
+    pub const LEFT_HAND_INDEX_INTERMEDIATE: FullBodyJointMETA = Self(26i32);
+    pub const LEFT_HAND_INDEX_DISTAL: FullBodyJointMETA = Self(27i32);
+    pub const LEFT_HAND_INDEX_TIP: FullBodyJointMETA = Self(28i32);
+    pub const LEFT_HAND_MIDDLE_METACARPAL: FullBodyJointMETA = Self(29i32);
+    pub const LEFT_HAND_MIDDLE_PROXIMAL: FullBodyJointMETA = Self(30i32);
+    pub const LEFT_HAND_MIDDLE_INTERMEDIATE: FullBodyJointMETA = Self(31i32);
+    pub const LEFT_HAND_MIDDLE_DISTAL: FullBodyJointMETA = Self(32i32);
+    pub const LEFT_HAND_MIDDLE_TIP: FullBodyJointMETA = Self(33i32);
+    pub const LEFT_HAND_RING_METACARPAL: FullBodyJointMETA = Self(34i32);
+    pub const LEFT_HAND_RING_PROXIMAL: FullBodyJointMETA = Self(35i32);
+    pub const LEFT_HAND_RING_INTERMEDIATE: FullBodyJointMETA = Self(36i32);
+    pub const LEFT_HAND_RING_DISTAL: FullBodyJointMETA = Self(37i32);
+    pub const LEFT_HAND_RING_TIP: FullBodyJointMETA = Self(38i32);
+    pub const LEFT_HAND_LITTLE_METACARPAL: FullBodyJointMETA = Self(39i32);
+    pub const LEFT_HAND_LITTLE_PROXIMAL: FullBodyJointMETA = Self(40i32);
+    pub const LEFT_HAND_LITTLE_INTERMEDIATE: FullBodyJointMETA = Self(41i32);
+    pub const LEFT_HAND_LITTLE_DISTAL: FullBodyJointMETA = Self(42i32);
+    pub const LEFT_HAND_LITTLE_TIP: FullBodyJointMETA = Self(43i32);
+    pub const RIGHT_HAND_PALM: FullBodyJointMETA = Self(44i32);
+    pub const RIGHT_HAND_WRIST: FullBodyJointMETA = Self(45i32);
+    pub const RIGHT_HAND_THUMB_METACARPAL: FullBodyJointMETA = Self(46i32);
+    pub const RIGHT_HAND_THUMB_PROXIMAL: FullBodyJointMETA = Self(47i32);
+    pub const RIGHT_HAND_THUMB_DISTAL: FullBodyJointMETA = Self(48i32);
+    pub const RIGHT_HAND_THUMB_TIP: FullBodyJointMETA = Self(49i32);
+    pub const RIGHT_HAND_INDEX_METACARPAL: FullBodyJointMETA = Self(50i32);
+    pub const RIGHT_HAND_INDEX_PROXIMAL: FullBodyJointMETA = Self(51i32);
+    pub const RIGHT_HAND_INDEX_INTERMEDIATE: FullBodyJointMETA = Self(52i32);
+    pub const RIGHT_HAND_INDEX_DISTAL: FullBodyJointMETA = Self(53i32);
+    pub const RIGHT_HAND_INDEX_TIP: FullBodyJointMETA = Self(54i32);
+    pub const RIGHT_HAND_MIDDLE_METACARPAL: FullBodyJointMETA = Self(55i32);
+    pub const RIGHT_HAND_MIDDLE_PROXIMAL: FullBodyJointMETA = Self(56i32);
+    pub const RIGHT_HAND_MIDDLE_INTERMEDIATE: FullBodyJointMETA = Self(57i32);
+    pub const RIGHT_HAND_MIDDLE_DISTAL: FullBodyJointMETA = Self(58i32);
+    pub const RIGHT_HAND_MIDDLE_TIP: FullBodyJointMETA = Self(59i32);
+    pub const RIGHT_HAND_RING_METACARPAL: FullBodyJointMETA = Self(60i32);
+    pub const RIGHT_HAND_RING_PROXIMAL: FullBodyJointMETA = Self(61i32);
+    pub const RIGHT_HAND_RING_INTERMEDIATE: FullBodyJointMETA = Self(62i32);
+    pub const RIGHT_HAND_RING_DISTAL: FullBodyJointMETA = Self(63i32);
+    pub const RIGHT_HAND_RING_TIP: FullBodyJointMETA = Self(64i32);
+    pub const RIGHT_HAND_LITTLE_METACARPAL: FullBodyJointMETA = Self(65i32);
+    pub const RIGHT_HAND_LITTLE_PROXIMAL: FullBodyJointMETA = Self(66i32);
+    pub const RIGHT_HAND_LITTLE_INTERMEDIATE: FullBodyJointMETA = Self(67i32);
+    pub const RIGHT_HAND_LITTLE_DISTAL: FullBodyJointMETA = Self(68i32);
+    pub const RIGHT_HAND_LITTLE_TIP: FullBodyJointMETA = Self(69i32);
+    pub const LEFT_UPPER_LEG: FullBodyJointMETA = Self(70i32);
+    pub const LEFT_LOWER_LEG: FullBodyJointMETA = Self(71i32);
+    pub const LEFT_FOOT_ANKLE_TWIST: FullBodyJointMETA = Self(72i32);
+    pub const LEFT_FOOT_ANKLE: FullBodyJointMETA = Self(73i32);
+    pub const LEFT_FOOT_SUBTALAR: FullBodyJointMETA = Self(74i32);
+    pub const LEFT_FOOT_TRANSVERSE: FullBodyJointMETA = Self(75i32);
+    pub const LEFT_FOOT_BALL: FullBodyJointMETA = Self(76i32);
+    pub const RIGHT_UPPER_LEG: FullBodyJointMETA = Self(77i32);
+    pub const RIGHT_LOWER_LEG: FullBodyJointMETA = Self(78i32);
+    pub const RIGHT_FOOT_ANKLE_TWIST: FullBodyJointMETA = Self(79i32);
+    pub const RIGHT_FOOT_ANKLE: FullBodyJointMETA = Self(80i32);
+    pub const RIGHT_FOOT_SUBTALAR: FullBodyJointMETA = Self(81i32);
+    pub const RIGHT_FOOT_TRANSVERSE: FullBodyJointMETA = Self(82i32);
+    pub const RIGHT_FOOT_BALL: FullBodyJointMETA = Self(83i32);
+    pub const COUNT: FullBodyJointMETA = Self(84i32);
+    pub const NONE: FullBodyJointMETA = Self(85i32);
+    pub fn from_raw(x: i32) -> Self {
+        Self(x)
+    }
+    pub fn into_raw(self) -> i32 {
+        self.0
+    }
+}
+impl fmt::Debug for FullBodyJointMETA {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            Self::ROOT => Some("ROOT"),
+            Self::HIPS => Some("HIPS"),
+            Self::SPINE_LOWER => Some("SPINE_LOWER"),
+            Self::SPINE_MIDDLE => Some("SPINE_MIDDLE"),
+            Self::SPINE_UPPER => Some("SPINE_UPPER"),
+            Self::CHEST => Some("CHEST"),
+            Self::NECK => Some("NECK"),
+            Self::HEAD => Some("HEAD"),
+            Self::LEFT_SHOULDER => Some("LEFT_SHOULDER"),
+            Self::LEFT_SCAPULA => Some("LEFT_SCAPULA"),
+            Self::LEFT_ARM_UPPER => Some("LEFT_ARM_UPPER"),
+            Self::LEFT_ARM_LOWER => Some("LEFT_ARM_LOWER"),
+            Self::LEFT_HAND_WRIST_TWIST => Some("LEFT_HAND_WRIST_TWIST"),
+            Self::RIGHT_SHOULDER => Some("RIGHT_SHOULDER"),
+            Self::RIGHT_SCAPULA => Some("RIGHT_SCAPULA"),
+            Self::RIGHT_ARM_UPPER => Some("RIGHT_ARM_UPPER"),
+            Self::RIGHT_ARM_LOWER => Some("RIGHT_ARM_LOWER"),
+            Self::RIGHT_HAND_WRIST_TWIST => Some("RIGHT_HAND_WRIST_TWIST"),
+            Self::LEFT_HAND_PALM => Some("LEFT_HAND_PALM"),
+            Self::LEFT_HAND_WRIST => Some("LEFT_HAND_WRIST"),
+            Self::LEFT_HAND_THUMB_METACARPAL => Some("LEFT_HAND_THUMB_METACARPAL"),
+            Self::LEFT_HAND_THUMB_PROXIMAL => Some("LEFT_HAND_THUMB_PROXIMAL"),
+            Self::LEFT_HAND_THUMB_DISTAL => Some("LEFT_HAND_THUMB_DISTAL"),
+            Self::LEFT_HAND_THUMB_TIP => Some("LEFT_HAND_THUMB_TIP"),
+            Self::LEFT_HAND_INDEX_METACARPAL => Some("LEFT_HAND_INDEX_METACARPAL"),
+            Self::LEFT_HAND_INDEX_PROXIMAL => Some("LEFT_HAND_INDEX_PROXIMAL"),
+            Self::LEFT_HAND_INDEX_INTERMEDIATE => Some("LEFT_HAND_INDEX_INTERMEDIATE"),
+            Self::LEFT_HAND_INDEX_DISTAL => Some("LEFT_HAND_INDEX_DISTAL"),
+            Self::LEFT_HAND_INDEX_TIP => Some("LEFT_HAND_INDEX_TIP"),
+            Self::LEFT_HAND_MIDDLE_METACARPAL => Some("LEFT_HAND_MIDDLE_METACARPAL"),
+            Self::LEFT_HAND_MIDDLE_PROXIMAL => Some("LEFT_HAND_MIDDLE_PROXIMAL"),
+            Self::LEFT_HAND_MIDDLE_INTERMEDIATE => Some("LEFT_HAND_MIDDLE_INTERMEDIATE"),
+            Self::LEFT_HAND_MIDDLE_DISTAL => Some("LEFT_HAND_MIDDLE_DISTAL"),
+            Self::LEFT_HAND_MIDDLE_TIP => Some("LEFT_HAND_MIDDLE_TIP"),
+            Self::LEFT_HAND_RING_METACARPAL => Some("LEFT_HAND_RING_METACARPAL"),
+            Self::LEFT_HAND_RING_PROXIMAL => Some("LEFT_HAND_RING_PROXIMAL"),
+            Self::LEFT_HAND_RING_INTERMEDIATE => Some("LEFT_HAND_RING_INTERMEDIATE"),
+            Self::LEFT_HAND_RING_DISTAL => Some("LEFT_HAND_RING_DISTAL"),
+            Self::LEFT_HAND_RING_TIP => Some("LEFT_HAND_RING_TIP"),
+            Self::LEFT_HAND_LITTLE_METACARPAL => Some("LEFT_HAND_LITTLE_METACARPAL"),
+            Self::LEFT_HAND_LITTLE_PROXIMAL => Some("LEFT_HAND_LITTLE_PROXIMAL"),
+            Self::LEFT_HAND_LITTLE_INTERMEDIATE => Some("LEFT_HAND_LITTLE_INTERMEDIATE"),
+            Self::LEFT_HAND_LITTLE_DISTAL => Some("LEFT_HAND_LITTLE_DISTAL"),
+            Self::LEFT_HAND_LITTLE_TIP => Some("LEFT_HAND_LITTLE_TIP"),
+            Self::RIGHT_HAND_PALM => Some("RIGHT_HAND_PALM"),
+            Self::RIGHT_HAND_WRIST => Some("RIGHT_HAND_WRIST"),
+            Self::RIGHT_HAND_THUMB_METACARPAL => Some("RIGHT_HAND_THUMB_METACARPAL"),
+            Self::RIGHT_HAND_THUMB_PROXIMAL => Some("RIGHT_HAND_THUMB_PROXIMAL"),
+            Self::RIGHT_HAND_THUMB_DISTAL => Some("RIGHT_HAND_THUMB_DISTAL"),
+            Self::RIGHT_HAND_THUMB_TIP => Some("RIGHT_HAND_THUMB_TIP"),
+            Self::RIGHT_HAND_INDEX_METACARPAL => Some("RIGHT_HAND_INDEX_METACARPAL"),
+            Self::RIGHT_HAND_INDEX_PROXIMAL => Some("RIGHT_HAND_INDEX_PROXIMAL"),
+            Self::RIGHT_HAND_INDEX_INTERMEDIATE => Some("RIGHT_HAND_INDEX_INTERMEDIATE"),
+            Self::RIGHT_HAND_INDEX_DISTAL => Some("RIGHT_HAND_INDEX_DISTAL"),
+            Self::RIGHT_HAND_INDEX_TIP => Some("RIGHT_HAND_INDEX_TIP"),
+            Self::RIGHT_HAND_MIDDLE_METACARPAL => Some("RIGHT_HAND_MIDDLE_METACARPAL"),
+            Self::RIGHT_HAND_MIDDLE_PROXIMAL => Some("RIGHT_HAND_MIDDLE_PROXIMAL"),
+            Self::RIGHT_HAND_MIDDLE_INTERMEDIATE => Some("RIGHT_HAND_MIDDLE_INTERMEDIATE"),
+            Self::RIGHT_HAND_MIDDLE_DISTAL => Some("RIGHT_HAND_MIDDLE_DISTAL"),
+            Self::RIGHT_HAND_MIDDLE_TIP => Some("RIGHT_HAND_MIDDLE_TIP"),
+            Self::RIGHT_HAND_RING_METACARPAL => Some("RIGHT_HAND_RING_METACARPAL"),
+            Self::RIGHT_HAND_RING_PROXIMAL => Some("RIGHT_HAND_RING_PROXIMAL"),
+            Self::RIGHT_HAND_RING_INTERMEDIATE => Some("RIGHT_HAND_RING_INTERMEDIATE"),
+            Self::RIGHT_HAND_RING_DISTAL => Some("RIGHT_HAND_RING_DISTAL"),
+            Self::RIGHT_HAND_RING_TIP => Some("RIGHT_HAND_RING_TIP"),
+            Self::RIGHT_HAND_LITTLE_METACARPAL => Some("RIGHT_HAND_LITTLE_METACARPAL"),
+            Self::RIGHT_HAND_LITTLE_PROXIMAL => Some("RIGHT_HAND_LITTLE_PROXIMAL"),
+            Self::RIGHT_HAND_LITTLE_INTERMEDIATE => Some("RIGHT_HAND_LITTLE_INTERMEDIATE"),
+            Self::RIGHT_HAND_LITTLE_DISTAL => Some("RIGHT_HAND_LITTLE_DISTAL"),
+            Self::RIGHT_HAND_LITTLE_TIP => Some("RIGHT_HAND_LITTLE_TIP"),
+            Self::LEFT_UPPER_LEG => Some("LEFT_UPPER_LEG"),
+            Self::LEFT_LOWER_LEG => Some("LEFT_LOWER_LEG"),
+            Self::LEFT_FOOT_ANKLE_TWIST => Some("LEFT_FOOT_ANKLE_TWIST"),
+            Self::LEFT_FOOT_ANKLE => Some("LEFT_FOOT_ANKLE"),
+            Self::LEFT_FOOT_SUBTALAR => Some("LEFT_FOOT_SUBTALAR"),
+            Self::LEFT_FOOT_TRANSVERSE => Some("LEFT_FOOT_TRANSVERSE"),
+            Self::LEFT_FOOT_BALL => Some("LEFT_FOOT_BALL"),
+            Self::RIGHT_UPPER_LEG => Some("RIGHT_UPPER_LEG"),
+            Self::RIGHT_LOWER_LEG => Some("RIGHT_LOWER_LEG"),
+            Self::RIGHT_FOOT_ANKLE_TWIST => Some("RIGHT_FOOT_ANKLE_TWIST"),
+            Self::RIGHT_FOOT_ANKLE => Some("RIGHT_FOOT_ANKLE"),
+            Self::RIGHT_FOOT_SUBTALAR => Some("RIGHT_FOOT_SUBTALAR"),
+            Self::RIGHT_FOOT_TRANSVERSE => Some("RIGHT_FOOT_TRANSVERSE"),
+            Self::RIGHT_FOOT_BALL => Some("RIGHT_FOOT_BALL"),
+            Self::COUNT => Some("COUNT"),
+            Self::NONE => Some("NONE"),
+            _ => None,
+        };
+        fmt_enum(fmt, self.0, name)
+    }
+}
+#[doc = "Describes the set of body joints to track when creating an XrFullBodyTrackerMETA."]
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct BodyJointSetFullBodyMETA(i32);
+impl BodyJointSetFullBodyMETA {
+    #[doc = "Indicates that the created XrBodyTrackerFB tracks the set of body joints described by XrBodyJointFB enum, i.e. the xrLocateBodyJointsFB function returns an array of joint locations with the count of XR_BODY_JOINT_COUNT_FB and can be indexed using XrBodyJointFB."]
+    pub const DEFAULT: BodyJointSetFullBodyMETA = Self(0i32);
+    pub const FULL_BODY: BodyJointSetFullBodyMETA = Self(1000274000i32);
+    pub fn from_raw(x: i32) -> Self {
+        Self(x)
+    }
+    pub fn into_raw(self) -> i32 {
+        self.0
+    }
+}
+impl fmt::Debug for BodyJointSetFullBodyMETA {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            Self::DEFAULT => Some("DEFAULT"),
+            _ => None,
+        };
+        fmt_enum(fmt, self.0, name)
+    }
+}
 #[doc = "See [XrEyePositionFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrEyePositionFB)"]
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -4421,6 +4646,10 @@ handle!(FaceTracker2FB);
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct BodyTrackerFB(u64);
 handle!(BodyTrackerFB);
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub struct BodyTrackerFullBodyMETA(u64);
+handle!(BodyTrackerFullBodyMETA);
 #[doc = "See [XrEyeTrackerFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrEyeTrackerFB)"]
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -6710,6 +6939,112 @@ pub struct BodyJointLocationsFB {
 }
 impl BodyJointLocationsFB {
     pub const TYPE: StructureType = StructureType::BODY_JOINT_LOCATIONS_FB;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct SystemBodyTrackingFullBodyPropertiesMETA {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub supports_full_body_tracking: Bool32,
+}
+impl SystemBodyTrackingFullBodyPropertiesMETA {
+    pub const TYPE: StructureType = StructureType::SYSTEM_BODY_TRACKING_FULL_BODY_PROPERTIES_META;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct BodyTrackerFullBodyCreateInfoMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub body_joint_set: BodyJointSetFullBodyMETA,
+}
+impl BodyTrackerFullBodyCreateInfoMETA {
+    pub const TYPE: StructureType = StructureType::BODY_TRACKER_FULL_BODY_CREATE_INFO_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
+pub struct BodySkeletonJointFullBodyMETA {
+    pub joint: i32,
+    pub parent_joint: i32,
+    pub pose: Posef,
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct BodySkeletonFullBodyMETA {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub joint_count: u32,
+    pub joints: *mut BodySkeletonJointFullBodyMETA,
+}
+impl BodySkeletonFullBodyMETA {
+    pub const TYPE: StructureType = StructureType::BODY_SKELETON_FULL_BODY_META;
+    #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
+    #[inline]
+    pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
+        let mut x = MaybeUninit::<Self>::uninit();
+        unsafe {
+            (x.as_mut_ptr() as *mut BaseOutStructure).write(BaseOutStructure {
+                ty: Self::TYPE,
+                next,
+            });
+        }
+        x
+    }
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct BodyJointsFullBodyLocateInfoMETA {
+    pub ty: StructureType,
+    pub next: *const c_void,
+    pub base_space: Space,
+    pub time: Time,
+}
+impl BodyJointsFullBodyLocateInfoMETA {
+    pub const TYPE: StructureType = StructureType::BODY_JOINTS_FULL_BODY_LOCATE_INFO_META;
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
+pub struct BodyJointFullBodyLocationMETA {
+    pub location_flags: SpaceLocationFlags,
+    pub pose: Posef,
+}
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct BodyJointFullBodyLocationsMETA {
+    pub ty: StructureType,
+    pub next: *mut c_void,
+    pub is_active: Bool32,
+    pub confidence: f32,
+    pub joint_count: u32,
+    pub joint_locations: *mut BodyJointFullBodyLocationMETA,
+    pub skeleton_changed_count: u32,
+    pub time: Time,
+}
+impl BodyJointFullBodyLocationsMETA {
+    pub const TYPE: StructureType = StructureType::BODY_JOINT_FULL_BODY_LOCATIONS_META;
     #[doc = r" Construct a partially-initialized value suitable for passing to OpenXR"]
     #[inline]
     pub fn out(next: *mut BaseOutStructure) -> MaybeUninit<Self> {
@@ -10300,6 +10635,22 @@ pub mod pfn {
         body_tracker: BodyTrackerFB,
         skeleton: *mut BodySkeletonFB,
     ) -> Result;
+    pub type CreateBodyTrackerFullBodyMETA = unsafe extern "system" fn(
+        session: Session,
+        create_info: *const BodyTrackerFullBodyCreateInfoMETA,
+        body_tracker: *mut BodyTrackerFullBodyMETA,
+    ) -> Result;
+    pub type DestroyBodyTrackerFullBodyMETA =
+        unsafe extern "system" fn(body_tracker: BodyTrackerFullBodyMETA) -> Result;
+    pub type LocateBodyJointsFullBodyMETA = unsafe extern "system" fn(
+        body_tracker: BodyTrackerFullBodyMETA,
+        locate_info: *const BodyJointsFullBodyLocateInfoMETA,
+        locations: *mut BodyJointFullBodyLocationsMETA,
+    ) -> Result;
+    pub type GetBodySkeletonFullBodyMETA = unsafe extern "system" fn(
+        body_tracker: BodyTrackerFullBodyMETA,
+        skeleton: *mut BodySkeletonFullBodyMETA,
+    ) -> Result;
     #[doc = "See [xrCreateEyeTrackerFB](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrCreateEyeTrackerFB) - defined by [XR_FB_eye_tracking_social](https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XR_FB_eye_tracking_social)"]
     pub type CreateEyeTrackerFB = unsafe extern "system" fn(
         session: Session,
@@ -11004,6 +11355,8 @@ pub const FB_COMPOSITION_LAYER_SECURE_CONTENT_EXTENSION_NAME: &[u8] =
     b"XR_FB_composition_layer_secure_content\0";
 pub const FB_body_tracking_SPEC_VERSION: u32 = 1u32;
 pub const FB_BODY_TRACKING_EXTENSION_NAME: &[u8] = b"XR_FB_body_tracking\0";
+pub const META_body_tracking_full_body_SPEC_VERSION: u32 = 1u32;
+pub const META_BODY_TRACKING_FULL_BODY_EXTENSION_NAME: &[u8] = b"XR_META_body_tracking_full_body\0";
 pub const FB_display_refresh_rate_SPEC_VERSION: u32 = 1u32;
 pub const FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME: &[u8] = b"XR_FB_display_refresh_rate\0";
 pub const FB_color_space_SPEC_VERSION: u32 = 3u32;
